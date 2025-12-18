@@ -56,6 +56,10 @@ def main():
     # Build pytest command
     cmd = ["pytest"]
 
+    # Ensure package can be imported
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent / "src"))
+
     # Add test directory
     test_dir = Path(__file__).parent / "tests"
     if args.specific:

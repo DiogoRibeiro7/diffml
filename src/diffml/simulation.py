@@ -194,3 +194,134 @@ def simulate_bs_two_step(
         S2 = S1
 
     return S1, S2, xi1, xi2
+
+
+def build_time_grid(T: float, n_steps: int) -> Tensor:
+    """Build a uniform time grid from 0 to T.
+
+    Creates a tensor of evenly spaced time points for discretized simulation.
+
+    Parameters
+    ----------
+    T : float
+        Final time (maturity).
+    n_steps : int
+        Number of time steps (not including t=0).
+
+    Returns
+    -------
+    Tensor
+        A 1D tensor of shape (n_steps + 1,) containing time points from 0 to T.
+
+    Raises
+    ------
+    ValueError
+        If T is negative or n_steps is not positive.
+
+    Examples
+    --------
+    >>> grid = build_time_grid(T=1.0, n_steps=4)
+    >>> grid
+    tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000])
+    """
+    if T < 0:
+        raise ValueError(f"T must be non-negative, got {T}")
+    if n_steps <= 0:
+        raise ValueError(f"n_steps must be positive, got {n_steps}")
+
+    device = get_device()
+    return torch.linspace(0, T, n_steps + 1, device=device, dtype=DEFAULT_DTYPE)
+
+
+def simulate_bs_paths(
+    spots: Tensor,
+    params: BSParams,
+    n_steps: int,
+    n_paths: int,
+    seed: Optional[int] = None,
+) -> Tuple[Tensor, Tensor]:
+    """Simulate full Black-Scholes paths with n_steps between 0 and T.
+
+    Uses exact Black-Scholes increments per step to generate the full price paths.
+    For each step dt, the price evolves as:
+    S(t+dt) = S(t) * exp((r - 0.5*sigma^2)*dt + sigma*sqrt(dt)*xi)
+
+    Parameters
+    ----------
+    spots : Tensor
+        Initial spot prices of shape (m, 1).
+    params : BSParams
+        Black-Scholes parameters containing r, sigma, and T.
+    n_steps : int
+        Number of time steps to simulate (not including t=0).
+    n_paths : int
+        Number of Monte Carlo paths to simulate per spot.
+    seed : Optional[int]
+        Random seed for reproducibility. If None, no seed is set.
+
+    Returns
+    -------
+    Tuple[Tensor, Tensor]
+        A tuple containing:
+        - paths: Price paths of shape (m, n_paths, n_steps + 1), including time 0
+        - xi: Standard normal increments of shape (m, n_paths, n_steps)
+
+    Raises
+    ------
+    ValueError
+        If spots has incorrect shape or invalid values.
+        If n_paths or n_steps is not positive.
+
+    Examples
+    --------
+    >>> spots = torch.tensor([[100.0], [110.0]])
+    >>> params = BSParams(r=0.05, sigma=0.2, T=1.0)
+    >>> paths, xi = simulate_bs_paths(spots, params, n_steps=252, n_paths=1000)
+    >>> paths.shape
+    torch.Size([2, 1000, 253])
+    """
+    # Input validation
+    if spots.dim() != 2 or spots.shape[1] != 1:
+        raise ValueError(f"spots must have shape (m, 1), got {spots.shape}")
+    if n_paths <= 0:
+        raise ValueError(f"n_paths must be positive, got {n_paths}")
+    if n_steps <= 0:
+        raise ValueError(f"n_steps must be positive, got {n_steps}")
+    if (spots <= 0).any():
+        raise ValueError("All spot prices must be positive")
+
+    # Get device and ensure double precision
+    device = get_device()
+    spots = spots.to(device=device, dtype=DEFAULT_DTYPE)
+
+    m = spots.shape[0]
+
+    # Set random seed if provided
+    if seed is not None:
+        torch.manual_seed(seed)
+
+    # Build time grid
+    dt = params.T / n_steps
+
+    # Generate all standard normal increments at once
+    # Shape: (m, n_paths, n_steps)
+    xi = torch.randn(m, n_paths, n_steps, device=device, dtype=DEFAULT_DTYPE)
+
+    # Pre-compute drift and diffusion per step
+    drift_per_step = (params.r - 0.5 * params.sigma ** 2) * dt
+    diffusion_per_step = params.sigma * torch.sqrt(torch.tensor(dt, dtype=DEFAULT_DTYPE))
+
+    # Initialize paths tensor
+    paths = torch.zeros((m, n_paths, n_steps + 1), device=device, dtype=DEFAULT_DTYPE)
+    paths[:, :, 0] = spots.expand(m, n_paths)
+
+    # Simulate paths step by step using cumulative sum of log increments
+    # This is more numerically stable than multiplying prices directly
+    log_spots = torch.log(spots)
+    log_increments = drift_per_step + diffusion_per_step * xi
+    log_cumsum = torch.cumsum(log_increments, dim=2)
+
+    # Compute all paths at once
+    paths[:, :, 1:] = torch.exp(log_spots.unsqueeze(2) + log_cumsum)
+
+    return paths, xi

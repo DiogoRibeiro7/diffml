@@ -48,7 +48,7 @@ def run_gamma_experiment() -> None:
     print(f"  r = {params.r:.2f}, sigma = {params.sigma:.2f}, T = {params.T:.4f}")
     print(f"\nPortfolio (butterfly spread):")
     for K, w in zip(strikes, weights):
-        print(f"  {w:+.2f} × Call(K={K:.2f})")
+        print(f"  {w:+.2f} x Call(K={K:.2f})")
 
     # Training data
     print("\nGenerating training data...")

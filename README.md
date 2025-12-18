@@ -82,6 +82,28 @@ pre-commit install
 
 ## 🚀 Quick Start
 
+### Configuration-Based Experiments (Recommended)
+
+Run experiments using TOML configuration files:
+
+```bash
+# List available experiments
+poetry run python scripts/run_experiment.py --list
+
+# Run an experiment with configuration
+poetry run python scripts/run_experiment.py --config configs/digital_default.toml
+
+# Validate a configuration without running
+poetry run python scripts/run_experiment.py --validate configs/digital_default.toml
+```
+
+Available configurations:
+- `configs/digital_default.toml` - Digital option experiment
+- `configs/barrier_default.toml` - Barrier option experiment
+- `configs/basket_digital_default.toml` - Basket option experiment
+- `configs/asian_default.toml` - Asian option experiment
+- `configs/smoothing_default.toml` - Smoothing experiment
+
 ### Run All Experiments
 
 Execute all experiments from the paper:
@@ -90,7 +112,7 @@ Execute all experiments from the paper:
 poetry run python scripts/run_all_experiments.py
 ```
 
-### Run Individual Experiments
+### Run Individual Experiments (Programmatic)
 
 ```python
 # Digital options with discontinuous payoffs

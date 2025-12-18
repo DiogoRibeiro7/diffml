@@ -1,0 +1,30 @@
+# Default configuration for smoothing experiment
+
+[experiment]
+name = "smoothing"
+seed = 42
+
+[training]
+n_epochs = 1000
+batch_size = 256
+lr_initial = 1e-3
+lr_min = 1e-6
+lambda_delta = 1.0  # Weight for delta regularization
+lambda_gamma = 0.0
+
+[dataset]
+m_train = 1024      # Number of training samples
+m_test = 256        # Number of test samples
+n_paths_train = 10000   # MC paths for training
+n_paths_test = 50000    # MC paths for testing
+x_min = 0.5         # Min spot as fraction of K
+x_max = 1.5         # Max spot as fraction of K
+
+[payoff]
+K = 100.0                           # Strike price
+eps_multipliers = [0.2, 0.5, 1.0, 2.0, 5.0]  # Different smoothing parameters
+
+[black_scholes]
+r = 0.0             # Risk-free rate
+sigma = 0.2         # Volatility
+T = 0.3333          # Time to maturity (4 months)

@@ -66,6 +66,8 @@ from diffml.bs_analytics import (
 
 # Monte Carlo simulation
 from diffml.simulation import (
+    build_time_grid,
+    simulate_bs_paths,
     simulate_bs_terminal,
     simulate_bs_two_step,
 )
@@ -87,9 +89,18 @@ from diffml.training import (
 
 # Dataset generators
 from diffml.datasets_barrier import make_barrier_dataset
+from diffml.datasets_barrier_extended import (
+    make_double_barrier_call_dataset,
+    make_down_and_in_call_dataset,
+    make_up_and_out_call_dataset,
+)
 from diffml.datasets_basket import make_basket_digital_dataset
 from diffml.datasets_digital import make_digital_dataset
 from diffml.datasets_gamma_portfolio import make_portfolio_gamma_dataset
+from diffml.datasets_path_dependent import (
+    make_arithmetic_asian_call_dataset,
+    make_lookback_call_dataset,
+)
 from diffml.datasets_smoothing import make_smoothed_digital_dataset
 
 # Experiment runners
@@ -117,6 +128,8 @@ __all__ = [
     "bs_digital_delta",
     "bs_digital_price",
     # Simulation
+    "build_time_grid",
+    "simulate_bs_paths",
     "simulate_bs_terminal",
     "simulate_bs_two_step",
     # Losses
@@ -129,11 +142,16 @@ __all__ = [
     "rmse",
     "train_model",
     # Dataset generators
+    "make_arithmetic_asian_call_dataset",
     "make_barrier_dataset",
     "make_basket_digital_dataset",
     "make_digital_dataset",
+    "make_double_barrier_call_dataset",
+    "make_down_and_in_call_dataset",
+    "make_lookback_call_dataset",
     "make_portfolio_gamma_dataset",
     "make_smoothed_digital_dataset",
+    "make_up_and_out_call_dataset",
     # Experiment runners
     "run_barrier_experiment",
     "run_basket_digital_experiment",

@@ -12,8 +12,8 @@ import time
 from pathlib import Path
 from typing import Dict, List
 
-# Add parent directory to path to import the package
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add src directory to path to import the package
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from diffml.config import get_device, set_default_dtype
 from diffml.experiments_barrier import run_barrier_experiment
@@ -92,9 +92,9 @@ def run_all_experiments(
         try:
             run_digital_experiment()
             results["digital"] = "Completed"
-            print("✓ Digital option experiment completed")
+            print("[OK] Digital option experiment completed")
         except Exception as e:
-            print(f"✗ Digital option experiment failed: {e}")
+            print(f"[FAIL] Digital option experiment failed: {e}")
             results["digital"] = f"Failed: {e}"
 
     if "barrier" in experiments_to_run:
@@ -104,9 +104,9 @@ def run_all_experiments(
         try:
             run_barrier_experiment()
             results["barrier"] = "Completed"
-            print("✓ Barrier option experiment completed")
+            print("[OK] Barrier option experiment completed")
         except Exception as e:
-            print(f"✗ Barrier option experiment failed: {e}")
+            print(f"[FAIL] Barrier option experiment failed: {e}")
             results["barrier"] = f"Failed: {e}"
 
     if "basket" in experiments_to_run:
@@ -116,9 +116,9 @@ def run_all_experiments(
         try:
             run_basket_digital_experiment()
             results["basket"] = "Completed"
-            print("✓ Basket digital option experiment completed")
+            print("[OK] Basket digital option experiment completed")
         except Exception as e:
-            print(f"✗ Basket digital option experiment failed: {e}")
+            print(f"[FAIL] Basket digital option experiment failed: {e}")
             results["basket"] = f"Failed: {e}"
 
     if "smoothing" in experiments_to_run:
@@ -128,9 +128,9 @@ def run_all_experiments(
         try:
             run_smoothing_experiment()
             results["smoothing"] = "Completed"
-            print("✓ Smoothing experiment completed")
+            print("[OK] Smoothing experiment completed")
         except Exception as e:
-            print(f"✗ Smoothing experiment failed: {e}")
+            print(f"[FAIL] Smoothing experiment failed: {e}")
             results["smoothing"] = f"Failed: {e}"
 
     if "gamma" in experiments_to_run:
@@ -140,9 +140,9 @@ def run_all_experiments(
         try:
             run_gamma_experiment()
             results["gamma"] = "Completed"
-            print("✓ Gamma portfolio experiment completed")
+            print("[OK] Gamma portfolio experiment completed")
         except Exception as e:
-            print(f"✗ Gamma portfolio experiment failed: {e}")
+            print(f"[FAIL] Gamma portfolio experiment failed: {e}")
             results["gamma"] = f"Failed: {e}"
 
     # Save summary

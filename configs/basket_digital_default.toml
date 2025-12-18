@@ -1,0 +1,30 @@
+# Default configuration for basket digital option experiment
+
+[experiment]
+name = "basket"
+seed = 42
+
+[training]
+n_epochs = 2000
+batch_size = 256
+lr_initial = 1e-3
+lr_min = 1e-6
+lambda_delta = 1.0  # Weight for delta regularization
+lambda_gamma = 0.0  # No gamma regularization
+
+[dataset]
+m_train = 2048      # More samples for high-dimensional problem
+m_test = 512        # More test samples
+n_paths_train = 10000   # MC paths for training
+n_paths_test = 50000    # MC paths for testing
+x_min = 0.5         # Min spot as fraction of K
+x_max = 1.5         # Max spot as fraction of K
+
+[payoff]
+K = 100.0           # Strike price for basket
+d = 20              # Number of assets in basket
+
+[black_scholes]
+r = 0.0             # Risk-free rate (Bachelier model)
+sigma = 0.2         # Volatility (same for all assets)
+T = 0.5             # Time to maturity (6 months)

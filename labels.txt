@@ -1,0 +1,42 @@
+# name|color|description
+type:bug|D73A4A|Incorrect behaviour, crashes, or wrong numerical results versus expectations or the paper.
+type:feature|A2EEEF|New functionality, experiments, datasets, or APIs.
+type:enhancement|A2EEEF|Improvements to existing features or performance without adding new features.
+type:docs|0075CA|Documentation, comments, examples, or tutorials.
+type:experiment|FBCA04|Experiment design, reproduction, or numerical study work.
+type:infra|BFDADC|CI, tooling, dependencies, repo plumbing, or workflows.
+type:question|D4C5F9|Usage questions or conceptual clarification.
+type:security|B60205|Security-related issues or concerns.
+
+area:analytics|C5DEF5|Analytic formulas, Greeks, and model-specific math.
+area:simulation|C5DEF5|Monte Carlo simulation, random paths, seeds.
+area:datasets|C5DEF5|Dataset construction, payoff definitions, labels.
+area:training|C5DEF5|Losses, training loops, schedulers, metrics.
+area:experiments|C5DEF5|Experiment scripts, configuration, orchestration.
+area:ci|C5DEF5|Continuous integration, pre-commit, workflows.
+area:docs|C5DEF5|Documentation and narrative content.
+
+prio:critical|E11D21|Critical issues that break core usage or produce seriously wrong results.
+prio:high|C24E00|Important issues that should be addressed soon.
+prio:medium|FBCA04|Normal-priority issues.
+prio:low|0E8A16|Low-priority or nice-to-have improvements.
+
+status:triage|FFD5D5|New issues awaiting review or classification.
+status:accepted|C2E0C6|Validated and planned work.
+status:in-progress|0366D6|Someone is actively working on this.
+status:blocked|B60205|Blocked by external dependency or decision.
+status:needs-info|E4E669|Needs more information from the reporter.
+status:duplicate|CCCCCC|Duplicate of another issue.
+status:wont-fix|FFFFFF|Decided not to fix, with rationale in comments.
+
+good first issue|7057FF|Good entry-level issue for new contributors.
+help wanted|008672|Maintainers would like external help on this.
+difficulty:easy|0E8A16|Relatively small, well-scoped changes.
+difficulty:medium|FBCA04|Moderate complexity; may span multiple modules.
+difficulty:hard|B60205|Complex or math-heavy work; requires deeper context.
+
+impact:results|5319E7|Affects numerical results, RMSE, convergence, or Greeks.
+impact:performance|1D76DB|Affects runtime, memory usage, or scalability.
+impact:api|0E8A16|Affects public APIs, scripts, or user-facing behaviour.
+replication:mismatch|E99695|Results do not match the referenced paper.
+replication:extension|94D3A2|Extensions beyond the original paper experiments.

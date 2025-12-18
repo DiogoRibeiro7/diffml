@@ -1,0 +1,79 @@
+name: Experiment mismatch / replication issue
+description: Report a mismatch between the paper’s results and the implementation
+title: "[EXPERIMENT] "
+labels:
+  - experiment
+  - needs-investigation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template if the numerical results you obtain do not match the paper
+        “Differential ML with a Difference” (e.g. RMSE curves, convergence behaviour).
+
+  - type: dropdown
+    id: experiment
+    attributes:
+      label: Experiment
+      description: Which experiment is affected?
+      options:
+        - Digital option (BS)
+        - Down-and-out barrier call
+        - Basket digital (Bachelier, high-d)
+        - Smoothed digital (ramp)
+        - Gamma-regularised portfolio (PW–LR)
+        - Other / custom
+    validations:
+      required: true
+
+  - type: textarea
+    id: setup
+    attributes:
+      label: Experimental setup
+      description: Describe your configuration (epochs, batch size, seeds, etc.).
+      placeholder: |
+        - TrainingConfig: n_epochs=2000, batch_size=256, lambda_delta=1.0, lambda_gamma=0.0
+        - Device: CUDA
+        - Any deviations from default repo settings.
+    validations:
+      required: true
+
+  - type: textarea
+    id: mismatch
+    attributes:
+      label: Observed mismatch
+      description: Describe how your results differ from the paper.
+      placeholder: |
+        - Paper reports price RMSE ~0.001–0.002, I observe ~0.01.
+        - Delta RMSE is not improving with DML vs standard ML.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and outputs
+      description: Paste relevant training logs or RMSE tables.
+      placeholder: |
+        Copy-paste the printed RMSEs or any plots/metrics you produced.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: code_changes
+    attributes:
+      label: Local modifications
+      description: List any changes you made to the code or hyperparameters.
+      placeholder: |
+        e.g. I changed the network width from 20 to 50 and lowered the learning rate.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else that could help diagnose the mismatch.
+      validations:
+        required: false

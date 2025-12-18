@@ -1,0 +1,68 @@
+# EditorConfig helps maintain consistent coding styles across different editors and IDEs
+# EditorConfig is awesome: https://EditorConfig.org
+
+# This is the top-most EditorConfig file
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Python files
+[*.py]
+indent_size = 4
+max_line_length = 100
+
+# Markdown files
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false
+
+# YAML files
+[*.{yml,yaml}]
+indent_size = 2
+
+# TOML files
+[*.toml]
+indent_size = 4
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# Shell scripts
+[*.sh]
+end_of_line = lf
+
+# Batch files
+[*.{bat,cmd}]
+end_of_line = crlf
+
+# Makefiles
+[Makefile]
+indent_style = tab
+
+# Git config files
+[.git*]
+indent_size = 4
+
+# Jupyter notebooks
+[*.ipynb]
+indent_size = 2
+
+# Configuration files
+[*.{ini,cfg}]
+indent_size = 4
+
+# GitHub Actions workflows
+[.github/workflows/*.{yml,yaml}]
+indent_size = 2
+
+# Docker files
+[{Dockerfile,docker-compose.yml}]
+indent_size = 2

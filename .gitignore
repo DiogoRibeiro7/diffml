@@ -205,3 +205,33 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# PyTorch and ML specific
+*.pt
+*.pth
+*.ckpt
+checkpoint/
+checkpoints/
+saved_models/
+models/
+
+# Experiment outputs
+output/
+outputs/
+results/
+runs/
+logs/
+
+# Data files
+data/
+!data/sample/
+
+# Weights & Biases
+wandb/
+
+# Tensorboard
+tensorboard/
+.tensorboard/
+
+# MLflow
+mlruns/

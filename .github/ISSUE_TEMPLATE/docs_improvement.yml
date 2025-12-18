@@ -1,0 +1,48 @@
+name: Documentation improvement
+description: Suggest a change or addition to the documentation
+title: "[DOCS] "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for README, docstrings, or high-level documentation issues.
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: Where is the documentation issue?
+      placeholder: |
+        e.g. README.md "Usage" section, bs_analytics.py docstrings, experiments_digital.py, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is confusing, incorrect, or missing?
+      placeholder: |
+        e.g. The README does not explain how to select GPU vs CPU, or how to reduce epochs for quick tests.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: Describe the change you would like to see.
+      placeholder: |
+        e.g. Add a “Quickstart” section with a minimal example and a “Reproducing paper results” section.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any extra information or examples.
+      validations:
+        required: false

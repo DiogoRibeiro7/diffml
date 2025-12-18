@@ -1,0 +1,74 @@
+# CODEOWNERS for diffml
+#
+# This file defines who is responsible for code in this repository.
+# GitHub automatically requests reviews from the code owners when
+# someone opens a pull request that modifies files they own.
+#
+# Each line is a file pattern followed by one or more owners.
+# The last matching pattern takes precedence.
+#
+# For more information, see:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# TODO: Replace @diogoribeiro7 with your actual GitHub username or team handle
+
+# Default owner for everything in the repo
+* @diogoribeiro7
+
+# Core library code
+/src/diffml/ @diogoribeiro7
+/src/diffml/*.py @diogoribeiro7
+/src/diffml/**/*.py @diogoribeiro7
+
+# Test suite
+/tests/ @diogoribeiro7
+/tests/*.py @diogoribeiro7
+/tests/**/*.py @diogoribeiro7
+
+# CI/CD and GitHub workflows
+/.github/workflows/ @diogoribeiro7
+/.github/workflows/*.yml @diogoribeiro7
+/.github/workflows/*.yaml @diogoribeiro7
+
+# GitHub configuration
+/.github/ @diogoribeiro7
+/.github/ISSUE_TEMPLATE/ @diogoribeiro7
+/.github/*.md @diogoribeiro7
+/.github/dependabot.yml @diogoribeiro7
+
+# Documentation files
+/README.md @diogoribeiro7
+/CONTRIBUTING.md @diogoribeiro7
+/RELEASE.md @diogoribeiro7
+/SECURITY.md @diogoribeiro7
+/CODE_OF_CONDUCT.md @diogoribeiro7
+/CHANGELOG.md @diogoribeiro7
+/LICENSE @diogoribeiro7
+
+# Configuration files
+/pyproject.toml @diogoribeiro7
+/poetry.lock @diogoribeiro7
+/.gitignore @diogoribeiro7
+/.gitattributes @diogoribeiro7
+/ruff.toml @diogoribeiro7
+
+# Scripts and tools
+/scripts/ @diogoribeiro7
+/scripts/*.py @diogoribeiro7
+/run_tests.py @diogoribeiro7
+
+# Notebooks (if any)
+/*.ipynb @diogoribeiro7
+/notebooks/ @diogoribeiro7
+/notebooks/*.ipynb @diogoribeiro7
+
+# Docker files (if added in future)
+/Dockerfile @diogoribeiro7
+/docker-compose.yml @diogoribeiro7
+/.dockerignore @diogoribeiro7
+
+# Additional maintainers can be added here for specific areas:
+# Examples:
+# /src/diffml/experiments_*.py @diogoribeiro7 @data-science-team
+# /src/diffml/bs_analytics.py @diogoribeiro7 @quant-team
+# /tests/test_*.py @diogoribeiro7 @qa-team

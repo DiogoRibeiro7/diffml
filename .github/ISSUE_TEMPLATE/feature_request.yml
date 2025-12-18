@@ -1,0 +1,64 @@
+name: Feature request
+description: Suggest an enhancement or new capability
+title: "[FEAT] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to propose a new feature, improvement, or extension.
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this feature useful? What problem does it solve?
+      placeholder: |
+        e.g. I want to add support for a new payoff type so we can compare DML on path-dependent options.
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Proposed solution
+      description: Describe what you would like to see implemented.
+      placeholder: |
+        e.g. Add a new module `datasets_asian.py` plus an experiment script that mirrors Section X of the paper.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any alternative solutions or workarounds you have considered.
+      placeholder: |
+        e.g. I tried to approximate this using the existing barrier dataset, but it does not capture the same structure.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope of changes
+      description: What parts of the repo does this feature touch?
+      options:
+        - label: Core math / analytics
+        - label: Datasets / simulation
+        - label: Training / losses
+        - label: Experiments / scripts
+        - label: Documentation
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any references, links, or notes?
+      placeholder: |
+        e.g. Link to a paper or repository that inspired this feature.
+    validations:
+      required: false

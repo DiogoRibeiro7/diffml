@@ -1,0 +1,61 @@
+# This CITATION.cff file was generated to help users cite this repository.
+# Learn more about CITATION files at https://citation-file-format.github.io/
+
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+type: software
+title: "diffml"
+abstract: "PyTorch implementation of experiments from 'Differential ML with a Difference' by Paul Glasserman and Siddharth Hemant Karmarkar, demonstrating differential machine learning techniques for option pricing and sensitivity estimation."
+version: 0.1.0
+date-released: 2025-12-18
+license: MIT
+doi: 10.5281/zenodo.XXXXXXX  # TODO: Add Zenodo DOI after creating a release
+url: "https://github.com/diogoribeiro7/diffml"
+repository-code: "https://github.com/diogoribeiro7/diffml"
+
+authors:
+  - family-names: "Ribeiro"
+    given-names: "Diogo"
+    email: "dfr@esmad.ipp.pt"
+    affiliation: "ESMAD - IPP"
+    orcid: "https://orcid.org/0009-0001-2022-7072"
+
+keywords:
+  - differential machine learning
+  - differential ml
+  - quantitative finance
+  - option pricing
+  - monte carlo simulation
+  - pytorch
+  - deep learning
+  - sensitivity analysis
+  - greeks calculation
+  - pathwise derivatives
+  - likelihood ratio method
+  - financial derivatives
+  - black-scholes
+  - neural networks
+
+references:
+  - type: article
+    title: "Differential ML with a Difference"
+    authors:
+      - family-names: "Glasserman"
+        given-names: "Paul"
+      - family-names: "Karmarkar"
+        given-names: "Siddharth Hemant"
+    year: 2025
+    journal: "arXiv preprint"
+    doi: "10.48550/arXiv.2512.0530"
+    url: "https://doi.org/10.48550/arXiv.2512.0530"
+
+preferred-citation:
+  type: software
+  title: "diffml"
+  authors:
+    - family-names: "Ribeiro"
+      given-names: "Diogo"
+      orcid: "https://orcid.org/0009-0001-2022-7072"
+  version: 0.1.0
+  date-released: 2025-12-18
+  url: "https://github.com/diogoribeiro7/diffml"

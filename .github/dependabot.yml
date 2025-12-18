@@ -1,0 +1,57 @@
+# Dependabot configuration for automated dependency updates
+# This project uses Poetry for Python dependency management.
+# Dependabot will monitor pyproject.toml for pip-compatible dependency updates.
+
+version: 2
+
+updates:
+  # Python dependencies managed by Poetry
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    pull-request-branch-name:
+      separator: "-"
+    reviewers:
+      - "@diogoribeiro7"
+    assignees:
+      - "@diogoribeiro7"
+    allow:
+      - dependency-type: "all"
+    ignore:
+      # Optionally ignore major version updates for critical packages
+      # - dependency-name: "torch"
+      #   update-types: ["version-update:semver-major"]
+
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    pull-request-branch-name:
+      separator: "-"
+    reviewers:
+      - "@diogoribeiro7"
+    assignees:
+      - "@diogoribeiro7"

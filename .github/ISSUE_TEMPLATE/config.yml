@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions / usage help
+    url: https://github.com/diogoribeiro7/diffml/discussions
+    about: Ask general usage questions or discuss ideas in Discussions instead of opening an issue.
+issue_template:
+  # This key is deprecated by GitHub; the main behavior comes from the individual *.yml templates.
+  # Kept for backwards compatibility with some tooling.

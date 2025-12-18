@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Matches semantic version tags like v1.0.0, v2.1.3, etc.
+
+jobs:
+  build-and-publish:
+    # Only run on tags pushed to main branch
+    if: github.event.base_ref == 'refs/heads/main' || github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          poetry config virtualenvs.in-project true
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Build package
+        run: poetry build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.9.0
+        with:
+          # IMPORTANT: The workflow will fail if PYPI_API_TOKEN is not set in repository secrets
+          # To set up:
+          # 1. Go to https://pypi.org/manage/account/token/ and create an API token
+          # 2. Add the token to your repository secrets as PYPI_API_TOKEN
+          #    (Settings → Secrets and variables → Actions → New repository secret)
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+          # === Configuration for PyPI vs TestPyPI ===
+          #
+          # For production PyPI (default):
+          # - Use secret name: PYPI_API_TOKEN
+          # - Comment out the repository_url line below
+          #
+          # For TestPyPI (testing):
+          # - Use secret name: TEST_PYPI_API_TOKEN
+          # - Uncomment the repository_url line below
+          # - Change password to: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          #
+          # repository_url: https://test.pypi.org/legacy/
+
+          # Optional: Uncomment to see what would be uploaded without actually publishing
+          # skip_existing: true
+          # verbose: true

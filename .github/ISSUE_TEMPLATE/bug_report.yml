@@ -1,0 +1,92 @@
+name: Bug report
+description: Report a bug in the diffml codebase
+title: "[BUG] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear and concise description of the bug.
+      placeholder: |
+        e.g. Barrier experiment crashes when running on CPU with Python 3.11.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: |
+        How can we reproduce the bug? Please include commands and minimal code if possible.
+      placeholder: |
+        1. Clone the repo
+        2. Create a virtual environment and install dependencies
+        3. Run `python scripts/run_all_experiments.py`
+        4. Observe error in the barrier experiment
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: |
+        The barrier experiment should complete without errors and print RMSE values.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Include relevant stack traces or logs.
+      placeholder: |
+        Paste traceback or error message here.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Package version / commit
+      description: Which version / commit hash are you using?
+      placeholder: e.g. main @ 1a2b3c4, or v0.1.0
+    validations:
+      required: false
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python and PyTorch versions
+      description: Include the exact Python and PyTorch versions.
+      placeholder: e.g. Python 3.11.8, PyTorch 2.4.0
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, device, and how you installed dependencies.
+      placeholder: e.g. Ubuntu 22.04, CUDA 12.1, Poetry env
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other context, links, or notes that might help.
+      placeholder: |
+        e.g. This bug appears only when using CUDA, works fine on CPU.
+    validations:
+      required: false

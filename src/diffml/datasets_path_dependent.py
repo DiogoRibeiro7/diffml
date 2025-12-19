@@ -6,7 +6,6 @@ simulation with both pathwise and likelihood ratio method (LRM) for
 sensitivity estimation.
 """
 
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -23,7 +22,7 @@ def make_arithmetic_asian_call_dataset(
     x_min: float = 0.5,
     x_max: float = 1.5,
     n_paths_per_x: int = 10,
-    seed: Optional[int] = 1234,
+    seed: int | None = 1234,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for arithmetic Asian call option pricing.
 
@@ -47,7 +46,7 @@ def make_arithmetic_asian_call_dataset(
         Maximum initial spot price as fraction of K. Default is 1.5.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per initial spot. Default is 10.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns
@@ -124,9 +123,8 @@ def make_arithmetic_asian_call_dataset(
 
     # LRM delta
     # Score function for the full path: sum of all xi_i normalized
-    # score = sum_{i=1}^{n_steps} xi_i / (S0 * sigma * sqrt(dt))
+    # score = sum_{i=1}^{n_steps} xi_i / (S0 * sigma * sqrt(dt)),
     # where dt = T / n_steps
-    dt = params.T / n_steps
     normalizer = x * params.sigma * torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE))
 
     # Sum all increments: xi has shape (m, n_paths_per_x, n_steps)
@@ -147,7 +145,7 @@ def make_lookback_call_dataset(
     x_min: float = 0.5,
     x_max: float = 1.5,
     n_paths_per_x: int = 10,
-    seed: Optional[int] = 1234,
+    seed: int | None = 1234,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for fixed-strike lookback call option pricing.
 
@@ -170,7 +168,7 @@ def make_lookback_call_dataset(
         Maximum initial spot price as fraction of K. Default is 1.5.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per initial spot. Default is 10.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns

@@ -54,8 +54,15 @@ def run_gamma_experiment() -> None:
     m_train = 1024
     n_paths_train = 100
 
-    (x_train, price_true_train, delta_true_train, gamma_true_train,
-     price_mc_train, delta_pw_train, gamma_pwlr_train) = make_portfolio_gamma_dataset(
+    (
+        x_train,
+        _price_true_train,
+        _delta_true_train,
+        _gamma_true_train,
+        price_mc_train,
+        delta_pw_train,
+        gamma_pwlr_train,
+    ) = make_portfolio_gamma_dataset(
         m=m_train,
         params=params,
         strikes=strikes,

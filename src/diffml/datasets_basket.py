@@ -5,7 +5,6 @@ for basket option pricing using differential machine learning.
 Uses Bachelier model for multi-dimensional basket digital options.
 """
 
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -19,12 +18,12 @@ def make_basket_digital_dataset(
     d: int,
     K: float,
     params: BSParams,
-    w: Optional[Tensor] = None,
-    sigma_vec: Optional[Tensor] = None,
+    w: Tensor | None = None,
+    sigma_vec: Tensor | None = None,
     x_low: float = 80.0,
     x_high: float = 120.0,
     n_paths_per_x: int = 10,
-    seed: Optional[int] = 1234
+    seed: int | None = 1234
 ) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for high-dimensional Bachelier basket digital option.
 
@@ -44,9 +43,9 @@ def make_basket_digital_dataset(
         Strike price of the basket digital option.
     params : BSParams
         Black-Scholes/Bachelier parameters (r, sigma, T).
-    w : Optional[Tensor]
+    w : Tensor | None
         Weights for basket, shape (d,). If None, uses equal weights.
-    sigma_vec : Optional[Tensor]
+    sigma_vec : Tensor | None
         Volatilities per asset, shape (d,). If None, uses params.sigma for all.
     x_low : float, optional
         Lower bound for initial prices. Default is 80.0.
@@ -54,7 +53,7 @@ def make_basket_digital_dataset(
         Upper bound for initial prices. Default is 120.0.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per data point. Default is 10.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns
@@ -268,7 +267,7 @@ def create_basket_dataloaders(
     batch_size: int = 256,
     n_assets: int = 5,
     K: float = 500.0,
-    params: Optional[BSParams] = None,
+    params: BSParams | None = None,
     n_paths_per_x: int = 10000,
     **kwargs,
 ) -> tuple[DataLoader, DataLoader]:
@@ -286,7 +285,7 @@ def create_basket_dataloaders(
         Number of assets in the basket.
     K : float
         Strike price.
-    params : Optional[BSParams]
+    params : BSParams | None
         Black-Scholes/Bachelier parameters. If None, uses defaults.
     n_paths_per_x : int
         Number of MC paths per data point.

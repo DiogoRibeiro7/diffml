@@ -4,7 +4,6 @@ This module implements various neural network architectures used in the
 differential machine learning experiments.
 """
 
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -228,7 +227,7 @@ class DifferentialNet(nn.Module):
     ----------
     base_network : nn.Module
         Base neural network for function approximation.
-    differential_indices : Optional[List[int]]
+    differential_indices : list[int] | None
         Indices of inputs for which to compute derivatives.
         If None, computes derivatives for all inputs.
     """
@@ -236,7 +235,7 @@ class DifferentialNet(nn.Module):
     def __init__(
         self,
         base_network: nn.Module,
-        differential_indices: Optional[list[int]] = None,
+        differential_indices: list[int] | None = None,
     ) -> None:
         """Initialize the differential network."""
         super().__init__()
@@ -245,7 +244,7 @@ class DifferentialNet(nn.Module):
 
     def forward(
         self, x: torch.Tensor, compute_derivatives: bool = True
-    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """Forward pass with optional derivative computation.
 
         Parameters
@@ -257,7 +256,7 @@ class DifferentialNet(nn.Module):
 
         Returns
         -------
-        tuple[torch.Tensor, Optional[torch.Tensor]]
+        tuple[torch.Tensor, torch.Tensor | None]
             Tuple of (values, derivatives) where:
             - values: tensor of shape (batch_size, output_dim)
             - derivatives: tensor of shape (batch_size, output_dim, n_differential_inputs)

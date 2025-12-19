@@ -12,9 +12,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-# Add src directory to path to import the package
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 from diffml.config import get_device, set_default_dtype
 from diffml.experiments_barrier import run_barrier_experiment
 from diffml.experiments_basket import run_basket_digital_experiment

@@ -4,7 +4,6 @@ This module provides functions to generate datasets for gamma portfolio
 hedging using differential machine learning.
 """
 
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -22,7 +21,7 @@ def make_portfolio_gamma_dataset(
     x_min: float = 0.5,
     x_max: float = 1.5,
     n_paths_per_x: int = 20,
-    seed: Optional[int] = 1234
+    seed: int | None = 1234
 ) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for portfolio gamma hedging.
 
@@ -48,7 +47,7 @@ def make_portfolio_gamma_dataset(
         Maximum spot price. Default is 1.5.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per spot price. Default is 20.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns
@@ -111,7 +110,7 @@ def make_portfolio_gamma_dataset(
 
     delta_true = torch.zeros_like(x)
 
-    for i, (K_i, w_i) in enumerate(zip(strikes, weights, strict=False)):
+    for K_i, w_i in zip(strikes, weights, strict=False):
         # Compute call price and gamma for this strike
         call_price_i = bs_call_price(x, K_i, params)
         call_gamma_i = bs_call_gamma(x, K_i, params)
@@ -177,10 +176,5 @@ def make_portfolio_gamma_dataset(
     # PW-LR gamma label
     # Shape: (m, 1)
     gamma_pwlr = gamma_paths.mean(dim=1, keepdim=True)
-
-    # Also compute LRM delta for comparison (though not requested)
-    # LRM delta uses score: xi / (x * sigma * sqrt(T))
-    score = xi / (x * params.sigma * sqrt_T)
-    delta_lrm = (disc_payoff * score).mean(dim=1, keepdim=True)
 
     return x, price_true, delta_true, gamma_true, price_mc, delta_pw, gamma_pwlr

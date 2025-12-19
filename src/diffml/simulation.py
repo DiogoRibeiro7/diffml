@@ -4,7 +4,6 @@ This module provides Monte Carlo simulation functionality for generating
 price paths under the Black-Scholes model and computing option payoffs.
 """
 
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -16,7 +15,7 @@ def simulate_bs_terminal(
     spots: Tensor,
     params: BSParams,
     n_paths: int,
-    seed: Optional[int] = None
+    seed: int | None = None
 ) -> tuple[Tensor, Tensor]:
     """Simulate terminal prices under Black-Scholes using exact one-step solution.
 
@@ -33,7 +32,7 @@ def simulate_bs_terminal(
         Black-Scholes parameters containing r, sigma, and T.
     n_paths : int
         Number of Monte Carlo paths to simulate per spot.
-    seed : Optional[int]
+    seed : int | None
         Random seed for reproducibility. If None, no seed is set.
 
     Returns
@@ -99,7 +98,7 @@ def simulate_bs_two_step(
     T1: float,
     T2: float,
     n_paths: int,
-    seed: Optional[int] = None
+    seed: int | None = None
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Simulate Black-Scholes prices at two time points for barrier options.
 
@@ -119,7 +118,7 @@ def simulate_bs_two_step(
         Second time point (maturity). Must be >= T1.
     n_paths : int
         Number of Monte Carlo paths to simulate per spot.
-    seed : Optional[int]
+    seed : int | None
         Random seed for reproducibility. If None, no seed is set.
 
     Returns
@@ -238,7 +237,7 @@ def simulate_bs_paths(
     params: BSParams,
     n_steps: int,
     n_paths: int,
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> tuple[Tensor, Tensor]:
     """Simulate full Black-Scholes paths with n_steps between 0 and T.
 
@@ -256,7 +255,7 @@ def simulate_bs_paths(
         Number of time steps to simulate (not including t=0).
     n_paths : int
         Number of Monte Carlo paths to simulate per spot.
-    seed : Optional[int]
+    seed : int | None
         Random seed for reproducibility. If None, no seed is set.
 
     Returns

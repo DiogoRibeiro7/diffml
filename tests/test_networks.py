@@ -47,7 +47,7 @@ def test_differential_net():
     x = torch.randn(batch_size, 3)
 
     # Test with derivatives
-    values, derivatives = diff_net(x, compute_derivatives=True)
+    values, _derivatives = diff_net(x, compute_derivatives=True)
 
     assert values.shape == (batch_size, 1), "Values shape mismatch"
     # Note: actual derivative computation not implemented in stub

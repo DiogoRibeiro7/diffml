@@ -396,8 +396,6 @@ class TestGammaPortfolioDataset:
             seed=42
         )
 
-        x, price_true, delta_true, gamma_true, price_mc, delta_pw, gamma_pwlr = results
-
         # Check that we get 7 outputs
         assert len(results) == 7
 
@@ -425,7 +423,7 @@ class TestGammaPortfolioDataset:
             seed=42
         )
 
-        x, price_true, delta_true, gamma_true, price_mc, delta_pw, gamma_pwlr = results
+        x, price_true, _delta_true, gamma_true, price_mc, _delta_pw, _gamma_pwlr = results
 
         # Analytical and MC prices should be close
         price_diff = (price_true - price_mc).abs()
@@ -455,14 +453,14 @@ class TestDatasetRobustness:
         n_paths = 2
 
         # Digital
-        x1, p1, d1, d2 = make_digital_dataset(
+        x1, _p1, _d1, _d2 = make_digital_dataset(
             m=m, K=100.0, params=bs_params,
             x_min=90.0, x_max=110.0, n_paths_per_x=n_paths, seed=1
         )
         assert x1.shape[0] == m
 
         # Barrier
-        x2, p2, d3, d4 = make_barrier_dataset(
+        x2, _p2, _d3, _d4 = make_barrier_dataset(
             m=m, K=1.0, B=0.85, params=bs_params,
             T1=bs_params.T/2, T2=bs_params.T,
             x_min=0.7, x_max=1.3, n_paths_per_x=n_paths, seed=2
@@ -470,14 +468,14 @@ class TestDatasetRobustness:
         assert x2.shape[0] == m
 
         # Basket
-        x3, p3, d5, d6 = make_basket_digital_dataset(
+        x3, _p3, _d5, _d6 = make_basket_digital_dataset(
             m=m, d=3, K=1.0, sigma=0.2, T=0.25,
             x_min=0.5, x_max=1.5, n_paths_per_x=n_paths, seed=3
         )
         assert x3.shape[0] == m
 
         # Smoothed
-        x4, p4, d7, d8 = make_smoothed_digital_dataset(
+        x4, _p4, _d7, _d8 = make_smoothed_digital_dataset(
             m=m, K=100.0, params=bs_params,
             x_min=90.0, x_max=110.0, n_paths_per_x=n_paths,
             eps_multiplier=1.0, seed=4
@@ -515,7 +513,7 @@ class TestDatasetRobustness:
         assert torch.allclose(p1, p2)
 
         # Generate with different seed
-        x3, p3, _, _ = make_digital_dataset(
+        _x3, p3, _, _ = make_digital_dataset(
             m=m, K=100.0, params=bs_params,
             x_min=90.0, x_max=110.0, n_paths_per_x=n_paths, seed=seed+1
         )

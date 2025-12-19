@@ -124,7 +124,7 @@ class TestAsianOptions:
         K = 100.0
         params = BSParams(r=0.0, sigma=0.2, T=0.5)  # r=0 for cleaner test
 
-        x, price, _, _ = make_arithmetic_asian_call_dataset(
+        _x, price, _, _ = make_arithmetic_asian_call_dataset(
             m=m,
             K=K,
             params=params,
@@ -146,7 +146,7 @@ class TestAsianOptions:
         K = 100.0
         params = BSParams(r=0.05, sigma=0.2, T=0.25)
 
-        x, _, delta_pw, delta_lrm = make_arithmetic_asian_call_dataset(
+        _x, _, delta_pw, delta_lrm = make_arithmetic_asian_call_dataset(
             m=m,
             K=K,
             params=params,
@@ -241,11 +241,11 @@ class TestLookbackOptions:
         seed = 789
 
         # Generate both with same parameters
-        x_asian, price_asian, _, _ = make_arithmetic_asian_call_dataset(
+        _x_asian, price_asian, _, _ = make_arithmetic_asian_call_dataset(
             m=m, K=K, params=params, n_steps=16, n_paths_per_x=500, seed=seed
         )
 
-        x_lookback, price_lookback, _, _ = make_lookback_call_dataset(
+        _x_lookback, price_lookback, _, _ = make_lookback_call_dataset(
             m=m, K=K, params=params, n_steps=16, n_paths_per_x=500, seed=seed
         )
 
@@ -391,7 +391,7 @@ class TestPathDependentIntegration:
         params = BSParams(r=0.05, sigma=0.2, T=0.25)
 
         # Generate Asian dataset
-        x, price, delta_pw, delta_lrm = make_arithmetic_asian_call_dataset(
+        x, price, delta_pw, _delta_lrm = make_arithmetic_asian_call_dataset(
             m=m, K=K, params=params, x_min=0.9, x_max=1.1, n_paths_per_x=500, seed=42
         )
 

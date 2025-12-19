@@ -59,7 +59,7 @@ def tiny_dataset() -> tuple[TensorDataset, torch.Tensor, torch.Tensor]:
     dataset = TensorDataset(x, price, delta_pw, delta_lrm)
 
     # Also return test data for evaluation
-    x_test, price_test, _, delta_test = make_digital_dataset(
+    x_test, price_test, _, _delta_test = make_digital_dataset(
         m=8,
         K=100.0,
         params=params,
@@ -347,7 +347,7 @@ class TestTrainingLoop:
         device: torch.device
     ) -> None:
         """Test training with delta LRM mode."""
-        dataset, x_test, price_test = tiny_dataset
+        dataset, x_test, _price_test = tiny_dataset
 
         # Create model
         model = PricingNet(input_dim=1, hidden_dim=10, n_hidden=2)

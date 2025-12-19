@@ -4,7 +4,6 @@ This module provides functions to generate datasets for comparing different
 smoothing techniques in differential machine learning.
 """
 
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -21,7 +20,7 @@ def make_smoothed_digital_dataset(
     x_min: float = 40.0,
     x_max: float = 160.0,
     n_paths_per_x: int = 10,
-    seed: Optional[int] = 1234
+    seed: int | None = 1234
 ) -> tuple[Tensor, Tensor, Tensor]:
     """Generate dataset for smoothed digital call option with ramp function.
 
@@ -46,7 +45,7 @@ def make_smoothed_digital_dataset(
         Maximum spot price. Default is 160.0.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per spot price. Default is 10.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns
@@ -93,7 +92,7 @@ def make_smoothed_digital_dataset(
 
     # Simulate terminal prices
     # ST shape: (m, n_paths_per_x), xi shape: (m, n_paths_per_x)
-    ST, xi = simulate_bs_terminal(x, params, n_paths_per_x, seed=seed)
+    ST, _xi = simulate_bs_terminal(x, params, n_paths_per_x, seed=seed)
 
     # Compute discount factor
     discount = torch.exp(-params.r * params.T)

@@ -5,8 +5,6 @@ the Black-Scholes model, used for benchmarking and validation.
 All computations are done in double precision using PyTorch.
 """
 
-from typing import Union
-
 import torch
 from torch import Tensor
 
@@ -135,7 +133,7 @@ def bs_digital_delta(x: Tensor, K: float, params: BSParams) -> Tensor:
     return delta
 
 
-def bs_call_price(x: Tensor, K: Union[float, Tensor], params: BSParams) -> Tensor:
+def bs_call_price(x: Tensor, K: float | Tensor, params: BSParams) -> Tensor:
     """Calculate Black-Scholes price for a European call option.
 
     Price = S * N(d1) - K * e^(-rT) * N(d2)
@@ -183,7 +181,7 @@ def bs_call_price(x: Tensor, K: Union[float, Tensor], params: BSParams) -> Tenso
     return price
 
 
-def bs_call_gamma(x: Tensor, K: Union[float, Tensor], params: BSParams) -> Tensor:
+def bs_call_gamma(x: Tensor, K: float | Tensor, params: BSParams) -> Tensor:
     """Calculate Black-Scholes gamma for a European call option.
 
     Gamma = d^2Price/dS^2 = n(d1) / (S * sigma * sqrt(T))

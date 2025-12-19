@@ -6,7 +6,6 @@ simulation with both pathwise and likelihood ratio method (LRM) for sensitivity
 estimation.
 """
 
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -24,7 +23,7 @@ def make_up_and_out_call_dataset(
     x_min: float = 0.5,
     x_max: float = 1.2,
     n_paths_per_x: int = 100,
-    seed: Optional[int] = 1234,
+    seed: int | None = 1234,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for up-and-out call option pricing.
 
@@ -51,7 +50,7 @@ def make_up_and_out_call_dataset(
         Should be less than H/K to avoid immediate knock-out.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per initial spot. Default is 100.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns
@@ -152,7 +151,7 @@ def make_double_barrier_call_dataset(
     x_min: float = 0.6,
     x_max: float = 0.9,
     n_paths_per_x: int = 100,
-    seed: Optional[int] = 1234,
+    seed: int | None = 1234,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for double barrier call option pricing.
 
@@ -182,7 +181,7 @@ def make_double_barrier_call_dataset(
         Should be less than H/K to avoid immediate knock-out.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per initial spot. Default is 100.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns
@@ -285,7 +284,7 @@ def make_down_and_in_call_dataset(
     x_min: float = 0.85,
     x_max: float = 1.5,
     n_paths_per_x: int = 100,
-    seed: Optional[int] = 1234,
+    seed: int | None = 1234,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for down-and-in call option pricing.
 
@@ -309,7 +308,7 @@ def make_down_and_in_call_dataset(
         Maximum initial spot price as fraction of K. Default is 1.5.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per initial spot. Default is 100.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns

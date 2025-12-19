@@ -32,6 +32,10 @@ ignore = [
     "D401",   # First line should be in imperative mood
     "ARG002", # Unused method argument
     "SIM108", # Use ternary operator (sometimes less readable)
+    "N803",   # Allow domain-specific uppercase argument names
+    "N806",   # Allow uppercase variables inside functions
+    "NPY002", # Allow legacy numpy seeding for reproducibility
+    "RUF022", # Preserve curated __all__ ordering
 ]
 
 [lint.per-file-ignores]

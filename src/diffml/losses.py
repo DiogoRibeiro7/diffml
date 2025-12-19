@@ -4,7 +4,6 @@ This module implements various loss functions for training neural networks
 with differential machine learning, including weighted sensitivity losses.
 """
 
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -14,12 +13,12 @@ from torch import Tensor
 def dml_loss(
     pred_price: Tensor,
     true_price: Tensor,
-    pred_delta_vector: Optional[Tensor] = None,
-    true_delta_vector: Optional[Tensor] = None,
-    pred_delta_scalar: Optional[Tensor] = None,
-    true_delta_scalar: Optional[Tensor] = None,
-    pred_gamma: Optional[Tensor] = None,
-    true_gamma: Optional[Tensor] = None,
+    pred_delta_vector: Tensor | None = None,
+    true_delta_vector: Tensor | None = None,
+    pred_delta_scalar: Tensor | None = None,
+    true_delta_scalar: Tensor | None = None,
+    pred_gamma: Tensor | None = None,
+    true_gamma: Tensor | None = None,
     lambda_delta: float = 0.0,
     lambda_gamma: float = 0.0,
 ) -> Tensor:
@@ -41,17 +40,17 @@ def dml_loss(
         Predicted prices from neural network, shape (batch_size, 1).
     true_price : Tensor
         True prices (labels), shape (batch_size, 1).
-    pred_delta_vector : Optional[Tensor]
+    pred_delta_vector : Tensor | None
         Predicted delta vector (for multi-dim input), shape (batch_size, d).
-    true_delta_vector : Optional[Tensor]
+    true_delta_vector : Tensor | None
         True delta vector labels, shape (batch_size, d).
-    pred_delta_scalar : Optional[Tensor]
+    pred_delta_scalar : Tensor | None
         Predicted delta scalar (for 1D input or averaged), shape (batch_size, 1).
-    true_delta_scalar : Optional[Tensor]
+    true_delta_scalar : Tensor | None
         True delta scalar labels, shape (batch_size, 1).
-    pred_gamma : Optional[Tensor]
+    pred_gamma : Tensor | None
         Predicted gamma (second derivative), shape (batch_size, 1).
-    true_gamma : Optional[Tensor]
+    true_gamma : Tensor | None
         True gamma labels, shape (batch_size, 1).
     lambda_delta : float
         Weight for delta regularization term. Default is 0.0 (no delta term).
@@ -173,9 +172,9 @@ class DifferentialLoss(nn.Module):
         Weight for the value loss component.
     sensitivity_weight : float
         Weight for the sensitivity loss component.
-    value_loss_fn : Optional[nn.Module]
+    value_loss_fn : nn.Module | None
         Loss function for values (default: MSE).
-    sensitivity_loss_fn : Optional[nn.Module]
+    sensitivity_loss_fn : nn.Module | None
         Loss function for sensitivities (default: MSE).
     """
 
@@ -183,8 +182,8 @@ class DifferentialLoss(nn.Module):
         self,
         value_weight: float = 1.0,
         sensitivity_weight: float = 1.0,
-        value_loss_fn: Optional[nn.Module] = None,
-        sensitivity_loss_fn: Optional[nn.Module] = None,
+        value_loss_fn: nn.Module | None = None,
+        sensitivity_loss_fn: nn.Module | None = None,
     ) -> None:
         """Initialize the differential loss."""
         super().__init__()
@@ -197,8 +196,8 @@ class DifferentialLoss(nn.Module):
         self,
         pred_values: torch.Tensor,
         true_values: torch.Tensor,
-        pred_sensitivities: Optional[torch.Tensor] = None,
-        true_sensitivities: Optional[torch.Tensor] = None,
+        pred_sensitivities: torch.Tensor | None = None,
+        true_sensitivities: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Compute the differential loss.
 
@@ -208,9 +207,9 @@ class DifferentialLoss(nn.Module):
             Predicted values.
         true_values : torch.Tensor
             True values.
-        pred_sensitivities : Optional[torch.Tensor]
+        pred_sensitivities : torch.Tensor | None
             Predicted sensitivities.
-        true_sensitivities : Optional[torch.Tensor]
+        true_sensitivities : torch.Tensor | None
             True sensitivities.
 
         Returns
@@ -274,8 +273,8 @@ class AdaptiveDifferentialLoss(nn.Module):
         self,
         pred_values: torch.Tensor,
         true_values: torch.Tensor,
-        pred_sensitivities: Optional[torch.Tensor] = None,
-        true_sensitivities: Optional[torch.Tensor] = None,
+        pred_sensitivities: torch.Tensor | None = None,
+        true_sensitivities: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Compute the adaptive differential loss.
 
@@ -285,9 +284,9 @@ class AdaptiveDifferentialLoss(nn.Module):
             Predicted values.
         true_values : torch.Tensor
             True values.
-        pred_sensitivities : Optional[torch.Tensor]
+        pred_sensitivities : torch.Tensor | None
             Predicted sensitivities.
-        true_sensitivities : Optional[torch.Tensor]
+        true_sensitivities : torch.Tensor | None
             True sensitivities.
 
         Returns
@@ -360,8 +359,8 @@ class HuberDifferentialLoss(nn.Module):
         self,
         pred_values: torch.Tensor,
         true_values: torch.Tensor,
-        pred_sensitivities: Optional[torch.Tensor] = None,
-        true_sensitivities: Optional[torch.Tensor] = None,
+        pred_sensitivities: torch.Tensor | None = None,
+        true_sensitivities: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Compute the Huber differential loss.
 
@@ -371,9 +370,9 @@ class HuberDifferentialLoss(nn.Module):
             Predicted values.
         true_values : torch.Tensor
             True values.
-        pred_sensitivities : Optional[torch.Tensor]
+        pred_sensitivities : torch.Tensor | None
             Predicted sensitivities.
-        true_sensitivities : Optional[torch.Tensor]
+        true_sensitivities : torch.Tensor | None
             True sensitivities.
 
         Returns

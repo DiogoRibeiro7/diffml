@@ -4,7 +4,7 @@ This module provides training loops, callbacks, and utilities for training
 neural networks with differential machine learning.
 """
 
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import torch
 import torch.nn as nn
@@ -25,7 +25,7 @@ def nn_value_delta_gamma(
     x: Tensor,
     compute_delta: bool = True,
     compute_gamma: bool = False,
-) -> tuple[Tensor, Optional[Tensor], Optional[Tensor]]:
+) -> tuple[Tensor, Tensor | None, Tensor | None]:
     """Compute neural network value and optionally its derivatives (delta and gamma).
 
     This function computes the output value from a neural network and optionally
@@ -45,7 +45,7 @@ def nn_value_delta_gamma(
 
     Returns
     -------
-    tuple[Tensor, Optional[Tensor], Optional[Tensor]]
+    tuple[Tensor, Tensor | None, Tensor | None]
         A tuple containing:
         - value: The model output of shape (batch_size, 1).
         - delta: The first derivative if compute_delta is True, else None.
@@ -217,9 +217,9 @@ class Trainer:
         Optimizer.
     device : torch.device
         Device for computation.
-    scheduler : Optional[Any]
+    scheduler : Any | None
         Learning rate scheduler.
-    early_stopping : Optional[EarlyStopping]
+    early_stopping : EarlyStopping | None
         Early stopping callback.
     """
 
@@ -229,8 +229,8 @@ class Trainer:
         loss_fn: nn.Module,
         optimizer: optim.Optimizer,
         device: torch.device,
-        scheduler: Optional[Any] = None,
-        early_stopping: Optional[EarlyStopping] = None,
+        scheduler: Any | None = None,
+        early_stopping: EarlyStopping | None = None,
     ) -> None:
         """Initialize the trainer."""
         self.model = model
@@ -345,7 +345,7 @@ class Trainer:
     def train(
         self,
         train_loader: DataLoader,
-        val_loader: Optional[DataLoader] = None,
+        val_loader: DataLoader | None = None,
         n_epochs: int = 100,
         verbose: bool = True,
     ) -> dict[str, list[float]]:
@@ -355,7 +355,7 @@ class Trainer:
         ----------
         train_loader : DataLoader
             Training data loader.
-        val_loader : Optional[DataLoader]
+        val_loader : DataLoader | None
             Validation data loader.
         n_epochs : int
             Number of epochs.
@@ -380,11 +380,10 @@ class Trainer:
                           f"Val Loss = {val_loss:.4f}")
 
                 # Early stopping
-                if self.early_stopping is not None:
-                    if self.early_stopping(val_loss):
-                        if verbose:
-                            print(f"Early stopping triggered at epoch {epoch}")
-                        break
+                if self.early_stopping is not None and self.early_stopping(val_loss):
+                    if verbose:
+                        print(f"Early stopping triggered at epoch {epoch}")
+                    break
             else:
                 if verbose:
                     print(f"Epoch {epoch}: Train Loss = {train_loss:.4f}")
@@ -447,7 +446,7 @@ def create_scheduler(
     optimizer: optim.Optimizer,
     scheduler_name: str,
     **kwargs,
-) -> Optional[Any]:
+) -> Any | None:
     """Create a learning rate scheduler.
 
     Parameters
@@ -461,7 +460,7 @@ def create_scheduler(
 
     Returns
     -------
-    Optional[Any]
+    Any | None
         Configured scheduler or None.
     """
     schedulers = {
@@ -520,7 +519,7 @@ def train_model(
     dataset: TensorDataset,
     config: TrainingConfig,
     mode: Mode,
-    device: Optional[torch.device] = None,
+    device: torch.device | None = None,
 ) -> nn.Module:
     """Train a neural network model using differential machine learning.
 
@@ -547,7 +546,7 @@ def train_model(
         - "delta_pathwise": Price + pathwise delta loss
         - "delta_lrm": Price + LRM delta loss
         - "gamma_pwlr": Price + LRM delta + PW-LR gamma loss
-    device : Optional[torch.device]
+    device : torch.device | None
         Device for computation. If None, uses get_device().
 
     Returns
@@ -617,7 +616,7 @@ def train_model(
                 gamma_pwlr = None
             elif len(batch) == 7:
                 # Gamma portfolio format: (x, price_true, delta_true, gamma_true, price_mc, delta_pw, gamma_pwlr)
-                x, true_price, delta_true, gamma_true, _, delta_pw, gamma_pwlr = batch
+                x, true_price, delta_true, _gamma_true, _, delta_pw, gamma_pwlr = batch
                 # For gamma portfolio, we use the true analytical labels for training
                 delta_lrm = delta_true  # Use analytical delta as LRM stand-in
             else:

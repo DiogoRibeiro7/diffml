@@ -134,7 +134,7 @@ class TestBasketExperimentSmoke:
         mock_config.return_value = fast_training_config
 
         # Patch the dimension used in the experiment
-        with patch('diffml.experiments_basket.run_basket_digital_experiment') as mock_run:
+        with patch('diffml.experiments_basket.run_basket_digital_experiment') as _mock_run:
             # Create a modified version that uses smaller dimension
             def run_small_basket():
                 """Run basket experiment with small dimension."""

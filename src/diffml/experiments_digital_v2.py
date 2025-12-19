@@ -181,7 +181,6 @@ def run_barrier_experiment(config: ExperimentConfig) -> None:
 
     # Set defaults
     set_default_dtype()
-    device = get_device()
     torch.manual_seed(config.seed)
 
     # Parameters
@@ -238,7 +237,6 @@ def run_basket_experiment(config: ExperimentConfig) -> None:
 
     # Set defaults
     set_default_dtype()
-    device = get_device()
     torch.manual_seed(config.seed)
 
     # Parameters
@@ -298,7 +296,6 @@ def run_smoothing_experiment(config: ExperimentConfig) -> None:
 
     # Set defaults
     set_default_dtype()
-    device = get_device()
     torch.manual_seed(config.seed)
 
     # Parameters
@@ -361,7 +358,6 @@ def run_asian_experiment(config: ExperimentConfig) -> None:
 
     # Set defaults
     set_default_dtype()
-    device = get_device()
     torch.manual_seed(config.seed)
 
     # Parameters

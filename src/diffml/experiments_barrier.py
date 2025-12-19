@@ -75,7 +75,7 @@ def run_barrier_experiment() -> None:
     m_test = 200
     n_paths_test = 20000  # Large sample for accurate "true" values
 
-    x_test, price_test_true, delta_pw_test_true, delta_lrm_test_true = make_barrier_dataset(
+    x_test, price_test_true, _delta_pw_test_true, delta_lrm_test_true = make_barrier_dataset(
         m=m_test,
         K=K,
         B=B,

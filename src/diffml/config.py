@@ -5,7 +5,6 @@ functions for managing experiment configurations and device selection.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 import torch
 
@@ -100,7 +99,7 @@ class SimulationConfig:
         Number of Monte Carlo paths.
     n_timesteps : int
         Number of time steps in discretization.
-    seed : Optional[int]
+    seed : int | None
         Random seed for reproducibility.
     antithetic : bool
         Use antithetic variates for variance reduction.
@@ -108,7 +107,7 @@ class SimulationConfig:
 
     n_paths: int = 10000
     n_timesteps: int = 100
-    seed: Optional[int] = 42
+    seed: int | None = 42
     antithetic: bool = True
 
 
@@ -128,7 +127,7 @@ class ExperimentConfig:
         Monte Carlo simulation settings.
     output_dir : str
         Directory for saving outputs.
-    device : Optional[str]
+    device : str | None
         Device for computation ('cuda', 'cpu', or None for auto).
     """
 
@@ -137,7 +136,7 @@ class ExperimentConfig:
     training: TrainingConfig = None
     simulation: SimulationConfig = None
     output_dir: str = "output"
-    device: Optional[str] = None
+    device: str | None = None
 
     def __post_init__(self) -> None:
         """Initialize default configurations if not provided."""

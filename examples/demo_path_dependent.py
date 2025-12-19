@@ -5,14 +5,7 @@ This script demonstrates the new path-dependent option datasets and
 extended barrier options added to the DiffML library.
 """
 
-import sys
-from pathlib import Path
-
 import torch
-
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 from torch.utils.data import TensorDataset
 
 from diffml import (

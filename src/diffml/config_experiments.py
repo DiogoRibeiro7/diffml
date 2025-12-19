@@ -8,18 +8,18 @@ experiments.
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 if sys.version_info >= (3, 11):
     import tomllib
 else:
     try:
         import tomli as tomllib
-    except ImportError:
+    except ImportError as exc:
         raise ImportError(
             "Python < 3.11 requires 'tomli' package. "
             "Install with: pip install tomli"
-        )
+        ) from exc
 
 from diffml.config import TrainingConfig
 
@@ -86,13 +86,13 @@ class ExperimentConfig:
     n_paths_test: int
 
     # Payoff-specific parameters (optional)
-    K: Optional[float] = None
-    B: Optional[float] = None
-    H: Optional[float] = None
-    L: Optional[float] = None
-    d: Optional[int] = None
-    n_steps: Optional[int] = None
-    eps_multipliers: Optional[list[float]] = None
+    K: float | None = None
+    B: float | None = None
+    H: float | None = None
+    L: float | None = None
+    d: int | None = None
+    n_steps: int | None = None
+    eps_multipliers: list[float] | None = None
 
     # Grid parameters
     x_min: float = 0.5
@@ -156,7 +156,7 @@ def load_experiment_config(path: str) -> ExperimentConfig:
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found: {path}")
 
-    with open(config_path, "rb") as f:
+    with config_path.open("rb") as f:
         toml_data = tomllib.load(f)
 
     # Extract main sections
@@ -168,9 +168,9 @@ def load_experiment_config(path: str) -> ExperimentConfig:
 
     # Validate required fields
     required_fields = ["name", "seed"]
-    for field in required_fields:
-        if field not in experiment_data:
-            raise ValueError(f"Missing required field in [experiment]: {field}")
+    for required_field in required_fields:
+        if required_field not in experiment_data:
+            raise ValueError(f"Missing required field in [experiment]: {required_field}")
 
     # Create TrainingConfig
     training_config = TrainingConfig(
@@ -231,11 +231,11 @@ def save_experiment_config(config: ExperimentConfig, path: str) -> None:
     """
     try:
         import toml
-    except ImportError:
+    except ImportError as exc:
         raise ImportError(
             "Saving TOML files requires 'toml' package. "
             "Install with: pip install toml"
-        )
+        ) from exc
 
     config_dict = {
         "experiment": {
@@ -292,5 +292,5 @@ def save_experiment_config(config: ExperimentConfig, path: str) -> None:
     config_path = Path(path)
     config_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(config_path, "w") as f:
+    with config_path.open("w") as f:
         toml.dump(config_dict, f)

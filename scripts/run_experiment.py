@@ -14,9 +14,6 @@ import argparse
 import sys
 from pathlib import Path
 
-# Add parent directory to path to import the package
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 from diffml.run_experiment import (
     list_available_experiments,
     run_experiment_from_config,

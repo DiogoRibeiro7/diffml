@@ -4,7 +4,6 @@ This module provides functions to generate training and validation datasets
 for digital option pricing using differential machine learning.
 """
 
-from typing import Optional
 
 import torch
 from torch import Tensor
@@ -21,7 +20,7 @@ def make_digital_dataset(
     x_min: float = 40.0,
     x_max: float = 160.0,
     n_paths_per_x: int = 10,
-    seed: Optional[int] = 1234
+    seed: int | None = 1234
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for 1D digital call option under Black-Scholes.
 
@@ -48,7 +47,7 @@ def make_digital_dataset(
         Maximum spot price. Default is 160.0.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per spot price. Default is 10.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns
@@ -192,7 +191,7 @@ def create_digital_dataloaders(
     n_val: int = 10000,
     batch_size: int = 256,
     K: float = 100.0,
-    params: Optional[BSParams] = None,
+    params: BSParams | None = None,
     n_paths_per_x: int = 10000,
     **kwargs,
 ) -> tuple[DataLoader, DataLoader]:
@@ -208,7 +207,7 @@ def create_digital_dataloaders(
         Batch size for dataloaders.
     K : float
         Strike price.
-    params : Optional[BSParams]
+    params : BSParams | None
         Black-Scholes parameters. If None, uses defaults.
     n_paths_per_x : int
         Number of MC paths per spot price.

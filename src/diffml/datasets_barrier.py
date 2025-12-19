@@ -4,8 +4,6 @@ This module provides functions to generate training and validation datasets
 for barrier option pricing using differential machine learning.
 """
 
-from typing import Optional
-
 import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
@@ -24,7 +22,7 @@ def make_barrier_dataset(
     x_min: float = 0.4,
     x_max: float = 1.6,
     n_paths_per_x: int = 10,
-    seed: Optional[int] = 1234
+    seed: int | None = 1234
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for down-and-out call barrier option under Black-Scholes.
 
@@ -53,7 +51,7 @@ def make_barrier_dataset(
         Maximum spot price. Default is 1.6.
     n_paths_per_x : int, optional
         Number of Monte Carlo paths per spot price. Default is 10.
-    seed : Optional[int], optional
+    seed : int | None, optional
         Random seed for reproducibility. Default is 1234.
 
     Returns
@@ -107,7 +105,7 @@ def make_barrier_dataset(
     # Simulate two-step paths
     # S1, S2 shape: (m, n_paths_per_x)
     # xi1, xi2 shape: (m, n_paths_per_x)
-    S1, S2, xi1, xi2 = simulate_bs_two_step(x, params, T1, T2, n_paths_per_x, seed=seed)
+    S1, S2, xi1, _xi2 = simulate_bs_two_step(x, params, T1, T2, n_paths_per_x, seed=seed)
 
     # Compute discount factor for maturity T2
     discount = torch.exp(-params.r * T2)
@@ -225,7 +223,7 @@ def create_barrier_dataloaders(
     B: float = 0.8,
     T1: float = 0.25,
     T2: float = 0.5,
-    params: Optional[BSParams] = None,
+    params: BSParams | None = None,
     n_paths_per_x: int = 10000,
     **kwargs,
 ) -> tuple[DataLoader, DataLoader]:
@@ -247,7 +245,7 @@ def create_barrier_dataloaders(
         Barrier observation time.
     T2 : float
         Maturity.
-    params : Optional[BSParams]
+    params : BSParams | None
         Black-Scholes parameters. If None, uses defaults.
     n_paths_per_x : int
         Number of MC paths per spot price.

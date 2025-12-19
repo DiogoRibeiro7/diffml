@@ -4,7 +4,7 @@ This module implements various neural network architectures used in the
 differential machine learning experiments.
 """
 
-from typing import List, Optional
+from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -135,7 +135,7 @@ class FeedForwardNet(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         output_dim: int,
         activation: str = "relu",
         dropout_rate: float = 0.0,
@@ -236,7 +236,7 @@ class DifferentialNet(nn.Module):
     def __init__(
         self,
         base_network: nn.Module,
-        differential_indices: Optional[List[int]] = None,
+        differential_indices: Optional[list[int]] = None,
     ) -> None:
         """Initialize the differential network."""
         super().__init__()

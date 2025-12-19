@@ -1,6 +1,5 @@
 """Tests for neural network architectures."""
 
-import pytest
 import torch
 
 from diffml.networks import (

@@ -4,13 +4,13 @@ This module provides functions to generate training and validation datasets
 for digital option pricing using differential machine learning.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 from diffml.simulation import simulate_bs_terminal
 
 
@@ -22,7 +22,7 @@ def make_digital_dataset(
     x_max: float = 160.0,
     n_paths_per_x: int = 10,
     seed: Optional[int] = 1234
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for 1D digital call option under Black-Scholes.
 
     Creates a dataset with spot price inputs and corresponding digital call
@@ -166,7 +166,7 @@ class DigitalOptionDataset(Dataset):
         """
         return self.n_samples
 
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def __getitem__(self, idx: int) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Get a sample from the dataset.
 
         Parameters
@@ -195,7 +195,7 @@ def create_digital_dataloaders(
     params: Optional[BSParams] = None,
     n_paths_per_x: int = 10000,
     **kwargs,
-) -> Tuple[DataLoader, DataLoader]:
+) -> tuple[DataLoader, DataLoader]:
     """Create training and validation dataloaders for digital options.
 
     Parameters

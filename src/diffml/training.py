@@ -4,7 +4,7 @@ This module provides training loops, callbacks, and utilities for training
 neural networks with differential machine learning.
 """
 
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
+from typing import Any, Literal, Optional
 
 import torch
 import torch.nn as nn
@@ -240,8 +240,8 @@ class Trainer:
         self.scheduler = scheduler
         self.early_stopping = early_stopping
 
-        self.train_losses: List[float] = []
-        self.val_losses: List[float] = []
+        self.train_losses: list[float] = []
+        self.val_losses: list[float] = []
 
     def train_epoch(
         self,
@@ -348,7 +348,7 @@ class Trainer:
         val_loader: Optional[DataLoader] = None,
         n_epochs: int = 100,
         verbose: bool = True,
-    ) -> Dict[str, List[float]]:
+    ) -> dict[str, list[float]]:
         """Train the model.
 
         Parameters

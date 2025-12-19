@@ -6,12 +6,12 @@ simulation with both pathwise and likelihood ratio method (LRM) for sensitivity
 estimation.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
 
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 from diffml.simulation import simulate_bs_paths, simulate_bs_two_step
 
 
@@ -25,7 +25,7 @@ def make_up_and_out_call_dataset(
     x_max: float = 1.2,
     n_paths_per_x: int = 100,
     seed: Optional[int] = 1234,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for up-and-out call option pricing.
 
     An up-and-out call pays max(S_T - K, 0) if the stock price never exceeds
@@ -153,7 +153,7 @@ def make_double_barrier_call_dataset(
     x_max: float = 0.9,
     n_paths_per_x: int = 100,
     seed: Optional[int] = 1234,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for double barrier call option pricing.
 
     A double barrier call pays max(S_T - K, 0) if the stock price stays within
@@ -286,7 +286,7 @@ def make_down_and_in_call_dataset(
     x_max: float = 1.5,
     n_paths_per_x: int = 100,
     seed: Optional[int] = 1234,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for down-and-in call option pricing.
 
     A down-and-in call pays max(S_T - K, 0) only if the stock price touches

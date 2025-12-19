@@ -10,7 +10,7 @@ from typing import Union
 import torch
 from torch import Tensor
 
-from diffml.config import BSParams, DEFAULT_DTYPE
+from diffml.config import DEFAULT_DTYPE, BSParams
 
 
 def _normal_cdf(z: Tensor) -> Tensor:

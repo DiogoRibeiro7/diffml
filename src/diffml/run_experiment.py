@@ -4,11 +4,9 @@ This module provides functions to run experiments based on TOML configuration
 files, using the experiment registry system.
 """
 
-import sys
 from pathlib import Path
-from typing import Optional
 
-from diffml.config_experiments import load_experiment_config, ExperimentConfig
+from diffml.config_experiments import load_experiment_config
 from diffml.experiments_registry import get_experiment, list_registered_experiments
 
 
@@ -44,7 +42,7 @@ def run_experiment_from_config(config_path: str) -> None:
     # Load the configuration
     config = load_experiment_config(config_path)
 
-    print(f"Configuration loaded successfully!")
+    print("Configuration loaded successfully!")
     print(f"  Experiment: {config.name}")
     print(f"  Seed: {config.seed}")
     print(f"  Training epochs: {config.training.n_epochs}")
@@ -60,7 +58,7 @@ def run_experiment_from_config(config_path: str) -> None:
     experiment_func = get_experiment(config.name)
 
     # Run the experiment
-    print(f"Starting experiment execution...")
+    print("Starting experiment execution...")
     print("=" * 80)
 
     try:
@@ -84,11 +82,11 @@ def _ensure_experiments_registered() -> None:
     import diffml.experiments_digital_v2  # noqa: F401
 
     # Alternatively, import individual experiment modules if they're updated
-    # import diffml.experiments_digital  # noqa: F401
-    # import diffml.experiments_barrier  # noqa: F401
-    # import diffml.experiments_basket  # noqa: F401
-    # import diffml.experiments_smoothing  # noqa: F401
-    # import diffml.experiments_gamma  # noqa: F401
+    # import diffml.experiments_digital
+    # import diffml.experiments_barrier
+    # import diffml.experiments_basket
+    # import diffml.experiments_smoothing
+    # import diffml.experiments_gamma
 
 
 def run_experiment_from_dict(config_dict: dict) -> None:
@@ -113,6 +111,7 @@ def run_experiment_from_dict(config_dict: dict) -> None:
     """
     # Create a temporary config file
     import tempfile
+
     import toml
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False) as f:
@@ -166,12 +165,12 @@ def validate_config(config_path: str) -> bool:
         _ensure_experiments_registered()
         experiment_func = get_experiment(config.name)
 
-        print(f"[OK] Configuration file is valid")
+        print("[OK] Configuration file is valid")
         print(f"  Experiment: {config.name}")
         print(f"  Function: {experiment_func.__name__}")
         return True
 
     except Exception as e:
-        print(f"[FAIL] Configuration validation failed:")
+        print("[FAIL] Configuration validation failed:")
         print(f"  {type(e).__name__}: {e}")
         return False

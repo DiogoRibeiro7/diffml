@@ -4,7 +4,6 @@ This module tests the training loop functionality, ensuring models
 can be trained without errors and show learning progress.
 """
 
-from typing import Tuple
 
 import pytest
 import torch
@@ -39,7 +38,7 @@ def device() -> torch.device:
 
 
 @pytest.fixture
-def tiny_dataset() -> Tuple[TensorDataset, torch.Tensor, torch.Tensor]:
+def tiny_dataset() -> tuple[TensorDataset, torch.Tensor, torch.Tensor]:
     """Create a tiny toy dataset for quick testing."""
     # Create small digital option dataset
     params = BSParams(r=0.05, sigma=0.2, T=0.25)
@@ -296,7 +295,7 @@ class TestTrainingLoop:
 
     def test_train_standard_mode(
         self,
-        tiny_dataset: Tuple[TensorDataset, torch.Tensor, torch.Tensor],
+        tiny_dataset: tuple[TensorDataset, torch.Tensor, torch.Tensor],
         device: torch.device
     ) -> None:
         """Test training with standard mode (price only)."""
@@ -344,7 +343,7 @@ class TestTrainingLoop:
 
     def test_train_delta_lrm_mode(
         self,
-        tiny_dataset: Tuple[TensorDataset, torch.Tensor, torch.Tensor],
+        tiny_dataset: tuple[TensorDataset, torch.Tensor, torch.Tensor],
         device: torch.device
     ) -> None:
         """Test training with delta LRM mode."""
@@ -384,7 +383,7 @@ class TestTrainingLoop:
 
     def test_train_delta_pathwise_mode(
         self,
-        tiny_dataset: Tuple[TensorDataset, torch.Tensor, torch.Tensor],
+        tiny_dataset: tuple[TensorDataset, torch.Tensor, torch.Tensor],
         device: torch.device
     ) -> None:
         """Test training with delta pathwise mode."""
@@ -470,7 +469,7 @@ class TestTrainingLoop:
 
     def test_training_reduces_loss(
         self,
-        tiny_dataset: Tuple[TensorDataset, torch.Tensor, torch.Tensor],
+        tiny_dataset: tuple[TensorDataset, torch.Tensor, torch.Tensor],
         device: torch.device
     ) -> None:
         """Test that training actually reduces the loss over epochs."""
@@ -543,7 +542,7 @@ class TestTrainingModes:
 
     def test_all_modes_run_without_error(
         self,
-        tiny_dataset: Tuple[TensorDataset, torch.Tensor, torch.Tensor],
+        tiny_dataset: tuple[TensorDataset, torch.Tensor, torch.Tensor],
         device: torch.device
     ) -> None:
         """Test that all training modes can run without exceptions."""
@@ -577,7 +576,7 @@ class TestTrainingModes:
 
     def test_invalid_mode_raises_error(
         self,
-        tiny_dataset: Tuple[TensorDataset, torch.Tensor, torch.Tensor],
+        tiny_dataset: tuple[TensorDataset, torch.Tensor, torch.Tensor],
         device: torch.device
     ) -> None:
         """Test that invalid training mode raises an error."""

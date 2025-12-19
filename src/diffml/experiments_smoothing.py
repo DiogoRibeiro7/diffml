@@ -4,16 +4,15 @@ This module implements experiments comparing different smoothing techniques
 for digital option pricing using differential ML.
 """
 
-from typing import Dict, Any, List
 
 import torch
 from torch.utils.data import TensorDataset
 
-from diffml.bs_analytics import bs_digital_price, bs_digital_delta
+from diffml.bs_analytics import bs_digital_delta, bs_digital_price
 from diffml.config import BSParams, TrainingConfig, get_device, set_default_dtype
 from diffml.datasets_smoothing import make_smoothed_digital_dataset
 from diffml.networks import PricingNet
-from diffml.training import train_model, rmse, nn_value_delta_gamma
+from diffml.training import nn_value_delta_gamma, rmse, train_model
 
 
 def run_smoothing_experiment() -> None:
@@ -41,7 +40,7 @@ def run_smoothing_experiment() -> None:
     params = BSParams(r=0.0, sigma=0.20, T=1.0/3.0)
     K = 100.0
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  r = {params.r:.2f}, sigma = {params.sigma:.2f}, T = {params.T:.4f}")
     print(f"  Strike K = {K:.1f}")
 

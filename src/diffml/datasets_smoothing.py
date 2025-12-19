@@ -4,13 +4,12 @@ This module provides functions to generate datasets for comparing different
 smoothing techniques in differential machine learning.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
-from torch.utils.data import Dataset, DataLoader
 
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 from diffml.simulation import simulate_bs_terminal
 
 
@@ -23,7 +22,7 @@ def make_smoothed_digital_dataset(
     x_max: float = 160.0,
     n_paths_per_x: int = 10,
     seed: Optional[int] = 1234
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Generate dataset for smoothed digital call option with ramp function.
 
     Uses a ramp smoothing function:
@@ -114,11 +113,11 @@ def make_smoothed_digital_dataset(
     # Apply ramp function
     # Below lower bound: payoff = 0 (already initialized)
     # Above upper bound: payoff = 1
-    above_upper = ST >= upper_bound
+    above_upper = upper_bound <= ST
     payoff[above_upper] = 1.0
 
     # In ramp region: linear interpolation
-    in_ramp = (ST > lower_bound) & (ST < upper_bound)
+    in_ramp = (lower_bound < ST) & (upper_bound > ST)
     payoff[in_ramp] = (ST[in_ramp] - lower_bound) / eps
 
     # Discounted payoff

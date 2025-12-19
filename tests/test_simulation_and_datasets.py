@@ -4,7 +4,6 @@ This module tests the correctness of simulation functions and
 all dataset generation functions for different option types.
 """
 
-from typing import Tuple
 
 import pytest
 import torch

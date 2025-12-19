@@ -4,15 +4,14 @@ This module implements the basket digital option experiments from the paper,
 demonstrating differential ML with Bachelier model on high-dimensional inputs.
 """
 
-from typing import Dict, Any
 
 import torch
 from torch.utils.data import TensorDataset
 
-from diffml.config import BSParams, TrainingConfig, get_device, set_default_dtype
+from diffml.config import TrainingConfig, get_device, set_default_dtype
 from diffml.datasets_basket import make_basket_digital_dataset
 from diffml.networks import PricingNet
-from diffml.training import train_model, rmse, nn_value_delta_gamma
+from diffml.training import nn_value_delta_gamma, rmse, train_model
 
 
 def run_basket_digital_experiment() -> None:
@@ -43,7 +42,7 @@ def run_basket_digital_experiment() -> None:
     sigma_bachelier = 0.2  # Bachelier volatility
     T = 1.0 / 3.0  # Maturity
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  Dimension d = {d}")
     print(f"  Strike K = {K:.1f}")
     print(f"  Bachelier sigma = {sigma_bachelier:.2f}, T = {T:.4f}")

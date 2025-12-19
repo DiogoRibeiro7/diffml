@@ -6,7 +6,6 @@ including Asian and lookback options, as well as extended barrier options.
 
 import pytest
 import torch
-from torch import Tensor
 
 from diffml.config import BSParams
 from diffml.datasets_barrier_extended import (

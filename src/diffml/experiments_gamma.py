@@ -4,7 +4,6 @@ This module implements the gamma portfolio hedging experiments from the paper,
 demonstrating differential ML with second-order sensitivities.
 """
 
-from typing import Dict, Any
 
 import torch
 from torch.utils.data import TensorDataset
@@ -12,7 +11,7 @@ from torch.utils.data import TensorDataset
 from diffml.config import BSParams, TrainingConfig, get_device, set_default_dtype
 from diffml.datasets_gamma_portfolio import make_portfolio_gamma_dataset
 from diffml.networks import PricingNet
-from diffml.training import train_model, rmse, nn_value_delta_gamma
+from diffml.training import nn_value_delta_gamma, rmse, train_model
 
 
 def run_gamma_experiment() -> None:
@@ -44,10 +43,10 @@ def run_gamma_experiment() -> None:
     strikes = torch.tensor([0.85, 0.9, 1.15], device=device, dtype=torch.float64)
     weights = torch.tensor([1.0, -1.5, 0.75], device=device, dtype=torch.float64)
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  r = {params.r:.2f}, sigma = {params.sigma:.2f}, T = {params.T:.4f}")
-    print(f"\nPortfolio (butterfly spread):")
-    for K, w in zip(strikes, weights):
+    print("\nPortfolio (butterfly spread):")
+    for K, w in zip(strikes, weights, strict=False):
         print(f"  {w:+.2f} x Call(K={K:.2f})")
 
     # Training data

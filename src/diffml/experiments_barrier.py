@@ -3,7 +3,6 @@
 This module implements the barrier option experiments from the paper.
 """
 
-from typing import Dict, Any
 
 import torch
 from torch.utils.data import TensorDataset
@@ -11,7 +10,7 @@ from torch.utils.data import TensorDataset
 from diffml.config import BSParams, TrainingConfig, get_device, set_default_dtype
 from diffml.datasets_barrier import make_barrier_dataset
 from diffml.networks import PricingNet
-from diffml.training import train_model, rmse, nn_value_delta_gamma
+from diffml.training import nn_value_delta_gamma, rmse, train_model
 
 
 def run_barrier_experiment() -> None:
@@ -42,7 +41,7 @@ def run_barrier_experiment() -> None:
     T1 = params.T / 2.0  # Barrier observation at mid-point
     T2 = params.T        # Maturity
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  r = {params.r:.2f}, sigma = {params.sigma:.2f}, T = {params.T:.4f}")
     print(f"  Strike K = {K:.2f}, Barrier B = {B:.2f}")
     print(f"  T1 (barrier) = {T1:.4f}, T2 (maturity) = {T2:.4f}")

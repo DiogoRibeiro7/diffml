@@ -6,12 +6,12 @@ simulation with both pathwise and likelihood ratio method (LRM) for
 sensitivity estimation.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
 
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 from diffml.simulation import simulate_bs_paths
 
 
@@ -24,7 +24,7 @@ def make_arithmetic_asian_call_dataset(
     x_max: float = 1.5,
     n_paths_per_x: int = 10,
     seed: Optional[int] = 1234,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for arithmetic Asian call option pricing.
 
     An arithmetic Asian call has payoff max(A - K, 0) where A is the arithmetic
@@ -148,7 +148,7 @@ def make_lookback_call_dataset(
     x_max: float = 1.5,
     n_paths_per_x: int = 10,
     seed: Optional[int] = 1234,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for fixed-strike lookback call option pricing.
 
     A fixed-strike lookback call has payoff max(M - K, 0) where M = max_{t} S_t

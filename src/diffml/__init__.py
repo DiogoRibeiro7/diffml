@@ -46,16 +46,6 @@ __author__ = "Diogo Ribeiro"
 __email__ = "dfr@esmad.ipp.pt"
 
 # Core configuration and utilities
-from diffml.config import (
-    BSParams,
-    TrainingConfig,
-    get_device,
-    set_default_dtype,
-)
-
-# Neural network architectures
-from diffml.networks import PricingNet
-
 # Black-Scholes analytics
 from diffml.bs_analytics import (
     bs_call_gamma,
@@ -63,28 +53,11 @@ from diffml.bs_analytics import (
     bs_digital_delta,
     bs_digital_price,
 )
-
-# Monte Carlo simulation
-from diffml.simulation import (
-    build_time_grid,
-    simulate_bs_paths,
-    simulate_bs_terminal,
-    simulate_bs_two_step,
-)
-
-# Loss functions
-from diffml.losses import (
-    AdaptiveDifferentialLoss,
-    DifferentialLoss,
-    HuberDifferentialLoss,
-    dml_loss,
-)
-
-# Training utilities
-from diffml.training import (
-    nn_value_delta_gamma,
-    rmse,
-    train_model,
+from diffml.config import (
+    BSParams,
+    TrainingConfig,
+    get_device,
+    set_default_dtype,
 )
 
 # Dataset generators
@@ -109,6 +82,32 @@ from diffml.experiments_basket import run_basket_digital_experiment
 from diffml.experiments_digital import run_digital_experiment
 from diffml.experiments_gamma import run_gamma_experiment
 from diffml.experiments_smoothing import run_smoothing_experiment
+
+# Loss functions
+from diffml.losses import (
+    AdaptiveDifferentialLoss,
+    DifferentialLoss,
+    HuberDifferentialLoss,
+    dml_loss,
+)
+
+# Neural network architectures
+from diffml.networks import PricingNet
+
+# Monte Carlo simulation
+from diffml.simulation import (
+    build_time_grid,
+    simulate_bs_paths,
+    simulate_bs_terminal,
+    simulate_bs_two_step,
+)
+
+# Training utilities
+from diffml.training import (
+    nn_value_delta_gamma,
+    rmse,
+    train_model,
+)
 
 __all__ = [
     # Version and metadata

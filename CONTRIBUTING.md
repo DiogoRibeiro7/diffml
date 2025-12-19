@@ -226,44 +226,27 @@ def test_digital_price_limits(bs_params: BSParams) -> None:
 
 ## 📚 Documentation
 
-### Docstrings
+### Docstring & Comment Standards
 
-Use NumPy-style docstrings for all public functions:
+- Every public module/class/function (anything in `src/diffml`, `scripts/`, or
+  `examples/` without a leading `_`) must follow the NumPy docstring template.
+  Required sections: `Parameters`, `Returns`, and `Raises` whenever the object
+  accepts arguments, returns values, or validates inputs.
+- Inline comments should describe *why* something is done (math identities,
+  invariants, links to equations) rather than narrate the code. Prefer putting
+  longer explanations in docstring `Notes`.
+- Type hints are mandatory. Use docstrings to document shapes, default behavior,
+  units, or side effects, not to repeat the type.
+- See [`docs/DOCS_STYLE.md`](docs/DOCS_STYLE.md) for the full style guide with
+  examples, template snippets, and enforcement details.
 
-```python
-def make_digital_dataset(
-    m: int,
-    K: float,
-    params: BSParams,
-    x_min: float = 80.0,
-    x_max: float = 120.0,
-    n_paths_per_x: int = 100,
-    seed: Optional[int] = None
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Generate dataset for digital option pricing.
+### Documentation Workflow
 
-    Parameters
-    ----------
-    m : int
-        Number of spot price points
-    K : float
-        Strike price
-    params : BSParams
-        Black-Scholes parameters
-
-    Returns
-    -------
-    Tuple[Tensor, Tensor, Tensor, Tensor]
-        Spot prices, option prices, pathwise deltas, LRM deltas
-    """
-```
-
-### README Updates
-
-If adding new features or experiments, update the README to:
-- List the new functionality
-- Provide usage examples
-- Update any relevant tables or figures
+1. Update docstrings/comments when you touch a public API.
+2. Run `ruff check src scripts examples --select D` to ensure pydocstyle passes.
+3. If you add a new public module, update [`docs/DOC_COVERAGE.md`](docs/DOC_COVERAGE.md).
+4. When adding user-facing features or experiments, update the README to list
+   the functionality, usage, and any new figures/tables.
 
 ## 📝 License
 

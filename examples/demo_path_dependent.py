@@ -13,6 +13,8 @@ import torch
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from torch.utils.data import TensorDataset
+
 from diffml import (
     BSParams,
     PricingNet,
@@ -22,7 +24,6 @@ from diffml import (
     make_up_and_out_call_dataset,
     train_model,
 )
-from torch.utils.data import TensorDataset
 
 
 def demo_asian_option():
@@ -74,7 +75,7 @@ def demo_asian_option():
     model.eval()
     with torch.no_grad():
         prices = model(x_test)
-        print(f"\nTest predictions:")
+        print("\nTest predictions:")
         for i, x_val in enumerate(x_test):
             print(f"  S0 = {x_val.item():.0f}: Price = {prices[i].item():.4f}")
 
@@ -150,6 +151,7 @@ def main():
     print("============================================")
 
     # Set default dtype
+    # Force float64 to mirror training loops and keep Monte Carlo noise low.
     torch.set_default_dtype(torch.float64)
 
     # Run demos

@@ -5,18 +5,17 @@ demonstrating differential ML for discontinuous payoffs, now with
 configuration-based setup.
 """
 
-from typing import Dict, Any
 
 import torch
 from torch.utils.data import TensorDataset
 
-from diffml.bs_analytics import bs_digital_price, bs_digital_delta
+from diffml.bs_analytics import bs_digital_delta, bs_digital_price
 from diffml.config import BSParams, get_device, set_default_dtype
 from diffml.config_experiments import ExperimentConfig
 from diffml.datasets_digital import make_digital_dataset
 from diffml.experiments_registry import register_experiment
 from diffml.networks import PricingNet
-from diffml.training import train_model, rmse, nn_value_delta_gamma
+from diffml.training import nn_value_delta_gamma, rmse, train_model
 
 
 @register_experiment("digital")
@@ -52,7 +51,7 @@ def run_digital_experiment(config: ExperimentConfig) -> None:
     params = BSParams(r=config.r, sigma=config.sigma, T=config.T)
     K = config.K if config.K is not None else 100.0
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  r = {params.r:.2f}, sigma = {params.sigma:.2f}, T = {params.T:.4f}")
     print(f"  Strike K = {K:.1f}")
 
@@ -105,7 +104,7 @@ def run_digital_experiment(config: ExperimentConfig) -> None:
     ]
 
     for name, mode, lambda_delta in approaches:
-        print(f"\n" + "-" * 60)
+        print("\n" + "-" * 60)
         print(f"Training: {name}")
         print(f"  Mode: {mode}")
         print(f"  Lambda_delta: {lambda_delta:.2f}")
@@ -138,7 +137,7 @@ def run_digital_experiment(config: ExperimentConfig) -> None:
         price_rmse = rmse(price_pred, price_test_true)
         delta_rmse = rmse(delta_pred, delta_test_true)
 
-        print(f"\nTest Results:")
+        print("\nTest Results:")
         print(f"  Price RMSE: {price_rmse:.4f}")
         print(f"  Delta RMSE: {delta_rmse:.4f}")
 
@@ -190,7 +189,7 @@ def run_barrier_experiment(config: ExperimentConfig) -> None:
     K = config.K if config.K is not None else 1.0
     B = config.B if config.B is not None else 0.85
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  Black-Scholes: r={params.r:.2f}, sigma={params.sigma:.2f}, T={params.T:.4f}")
     print(f"  Strike K = {K:.2f}")
     print(f"  Barrier B = {B:.2f}")
@@ -247,7 +246,7 @@ def run_basket_experiment(config: ExperimentConfig) -> None:
     K = config.K if config.K is not None else 100.0
     d = config.d if config.d is not None else 20
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  Black-Scholes: r={params.r:.2f}, sigma={params.sigma:.2f}, T={params.T:.4f}")
     print(f"  Strike K = {K:.1f}")
     print(f"  Dimension d = {d}")
@@ -307,7 +306,7 @@ def run_smoothing_experiment(config: ExperimentConfig) -> None:
     K = config.K if config.K is not None else 100.0
     eps_multipliers = config.eps_multipliers or [0.2, 0.5, 1.0, 2.0, 5.0]
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  Black-Scholes: r={params.r:.2f}, sigma={params.sigma:.2f}, T={params.T:.4f}")
     print(f"  Strike K = {K:.1f}")
     print(f"  Epsilon multipliers: {eps_multipliers}")
@@ -318,7 +317,7 @@ def run_smoothing_experiment(config: ExperimentConfig) -> None:
     results = {}
 
     for eps_mult in eps_multipliers:
-        print(f"\n" + "-" * 60)
+        print("\n" + "-" * 60)
         print(f"Training with epsilon multiplier = {eps_mult}")
 
         # Generate data with this smoothing parameter
@@ -370,7 +369,7 @@ def run_asian_experiment(config: ExperimentConfig) -> None:
     K = config.K if config.K is not None else 100.0
     n_steps = config.n_steps if config.n_steps is not None else 16
 
-    print(f"\nParameters:")
+    print("\nParameters:")
     print(f"  Black-Scholes: r={params.r:.2f}, sigma={params.sigma:.2f}, T={params.T:.4f}")
     print(f"  Strike K = {K:.1f}")
     print(f"  Time steps = {n_steps}")

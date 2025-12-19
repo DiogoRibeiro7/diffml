@@ -4,7 +4,6 @@ This module tests the correctness of Black-Scholes pricing functions
 for digital and vanilla options.
 """
 
-from typing import Tuple
 
 import pytest
 import torch

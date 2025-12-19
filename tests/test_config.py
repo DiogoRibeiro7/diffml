@@ -1,6 +1,5 @@
 """Tests for configuration module."""
 
-import pytest
 import torch
 
 from diffml.config import (
@@ -102,6 +101,7 @@ def test_set_random_seeds():
 
     # Verify reproducibility
     import random
+
     import numpy as np
 
     set_random_seeds(42)

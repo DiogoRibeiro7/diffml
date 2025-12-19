@@ -10,7 +10,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Any
 
 # Add src directory to path to import the package
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -49,9 +49,9 @@ def create_output_directory(base_dir: str = "output") -> Path:
 
 def run_all_experiments(
     output_dir: Path,
-    experiments_to_run: List[str] = None,
+    experiments_to_run: list[str] | None = None,
     seed: int = 42,
-) -> Dict[str, any]:
+) -> dict[str, Any]:
     """Run all experiments.
 
     Parameters
@@ -69,6 +69,7 @@ def run_all_experiments(
         Results from all experiments.
     """
     if experiments_to_run is None:
+        # None signals "run every experiment" so CLI invocations stay concise.
         experiments_to_run = ["digital", "barrier", "basket", "smoothing", "gamma"]
 
     # Set default dtype for financial computations
@@ -158,7 +159,7 @@ def run_all_experiments(
         "output_directory": str(output_dir),
     }
 
-    with open(output_dir / "experiment_summary.json", "w") as f:
+    with (output_dir / "experiment_summary.json").open("w") as f:
         json.dump(summary, f, indent=2)
 
     print(f"\nResults saved to: {output_dir}")
@@ -167,8 +168,13 @@ def run_all_experiments(
     return results
 
 
-def main():
-    """Main entry point."""
+def main() -> None:
+    """Parse CLI arguments and execute the requested experiments.
+
+    This function validates CLI options, prepares the output directory, and
+    delegates execution to `run_all_experiments`. It surfaces errors using
+    `SystemExit` so the script can be composed with automation tooling.
+    """
     parser = argparse.ArgumentParser(
         description="Run DiffML paper experiments",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -217,7 +223,7 @@ def main():
 
     # Run experiments
     try:
-        results = run_all_experiments(
+        run_all_experiments(
             output_dir=output_dir,
             experiments_to_run=experiments_to_run,
             seed=args.seed,

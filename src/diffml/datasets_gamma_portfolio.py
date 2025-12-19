@@ -4,14 +4,13 @@ This module provides functions to generate datasets for gamma portfolio
 hedging using differential machine learning.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
-from torch.utils.data import Dataset, DataLoader
 
-from diffml.bs_analytics import bs_call_price, bs_call_gamma
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.bs_analytics import bs_call_gamma, bs_call_price
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 from diffml.simulation import simulate_bs_terminal
 
 
@@ -24,7 +23,7 @@ def make_portfolio_gamma_dataset(
     x_max: float = 1.5,
     n_paths_per_x: int = 20,
     seed: Optional[int] = 1234
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for portfolio gamma hedging.
 
     Portfolio payoff:
@@ -112,7 +111,7 @@ def make_portfolio_gamma_dataset(
 
     delta_true = torch.zeros_like(x)
 
-    for i, (K_i, w_i) in enumerate(zip(strikes, weights)):
+    for i, (K_i, w_i) in enumerate(zip(strikes, weights, strict=False)):
         # Compute call price and gamma for this strike
         call_price_i = bs_call_price(x, K_i, params)
         call_gamma_i = bs_call_gamma(x, K_i, params)
@@ -135,7 +134,7 @@ def make_portfolio_gamma_dataset(
     # Shape: (m, n_paths_per_x)
     portfolio_payoff = torch.zeros_like(ST)
 
-    for K_i, w_i in zip(strikes, weights):
+    for K_i, w_i in zip(strikes, weights, strict=False):
         call_payoff_i = torch.maximum(ST - K_i, torch.tensor(0.0, dtype=DEFAULT_DTYPE))
         portfolio_payoff += w_i * call_payoff_i
 
@@ -153,8 +152,8 @@ def make_portfolio_gamma_dataset(
     # Shape: (m, n_paths_per_x)
     delta_paths = torch.zeros_like(ST)
 
-    for K_i, w_i in zip(strikes, weights):
-        in_the_money_i = (ST > K_i).to(dtype=DEFAULT_DTYPE)
+    for K_i, w_i in zip(strikes, weights, strict=False):
+        in_the_money_i = (K_i < ST).to(dtype=DEFAULT_DTYPE)
         delta_paths_i = discount * in_the_money_i * (ST / x)
         delta_paths += w_i * delta_paths_i
 
@@ -169,8 +168,8 @@ def make_portfolio_gamma_dataset(
     sqrt_T = torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE))
     gamma_paths = torch.zeros_like(ST)
 
-    for K_i, w_i in zip(strikes, weights):
-        in_the_money_i = (ST > K_i).to(dtype=DEFAULT_DTYPE)
+    for K_i, w_i in zip(strikes, weights, strict=False):
+        in_the_money_i = (K_i < ST).to(dtype=DEFAULT_DTYPE)
         # PW-LR gamma formula
         gamma_paths_i = discount * in_the_money_i * (ST / (x ** 2)) * (xi / (params.sigma * sqrt_T) - 1)
         gamma_paths += w_i * gamma_paths_i

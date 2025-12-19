@@ -18,14 +18,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from diffml.run_experiment import (
-    run_experiment_from_config,
     list_available_experiments,
+    run_experiment_from_config,
     validate_config,
 )
 
 
-def main():
-    """Main entry point for the experiment runner CLI."""
+def main() -> None:
+    """Entry point for the experiment runner CLI.
+
+    Parses user arguments, validates configuration files, and dispatches to
+    experiment utilities. Errors are converted into `SystemExit` codes so the
+    script integrates cleanly with shell pipelines.
+    """
     parser = argparse.ArgumentParser(
         description="Run DiffML experiments from configuration files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -112,7 +117,7 @@ Available configurations:
             # If seed override is provided, we would need to modify the config
             # For now, just run with the config as-is
             if args.seed is not None:
-                print(f"Note: Seed override not yet implemented. Using seed from config.")
+                print("Note: Seed override not yet implemented. Using seed from config.")
 
             run_experiment_from_config(args.config)
 

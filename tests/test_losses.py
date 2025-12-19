@@ -1,6 +1,5 @@
 """Tests for loss functions."""
 
-import pytest
 import torch
 
 from diffml.losses import (

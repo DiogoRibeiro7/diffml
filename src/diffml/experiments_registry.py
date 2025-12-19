@@ -4,7 +4,7 @@ This module provides a registry system for experiments, allowing them to be
 registered by name and invoked with configuration objects.
 """
 
-from typing import Callable, Dict
+from collections.abc import Callable
 
 from diffml.config_experiments import ExperimentConfig
 
@@ -12,7 +12,7 @@ from diffml.config_experiments import ExperimentConfig
 ExperimentFunc = Callable[[ExperimentConfig], None]
 
 # Global experiment registry
-EXPERIMENT_REGISTRY: Dict[str, ExperimentFunc] = {}
+EXPERIMENT_REGISTRY: dict[str, ExperimentFunc] = {}
 
 
 def register_experiment(name: str) -> Callable[[ExperimentFunc], ExperimentFunc]:

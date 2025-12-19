@@ -8,7 +8,7 @@ experiments.
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -92,7 +92,7 @@ class ExperimentConfig:
     L: Optional[float] = None
     d: Optional[int] = None
     n_steps: Optional[int] = None
-    eps_multipliers: Optional[List[float]] = None
+    eps_multipliers: Optional[list[float]] = None
 
     # Grid parameters
     x_min: float = 0.5
@@ -104,7 +104,7 @@ class ExperimentConfig:
     T: float = 0.25
 
     # Catch-all for additional parameters
-    extra_params: Dict[str, Any] = field(default_factory=dict)
+    extra_params: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate configuration after initialization."""

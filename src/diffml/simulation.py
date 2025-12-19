@@ -4,12 +4,12 @@ This module provides Monte Carlo simulation functionality for generating
 price paths under the Black-Scholes model and computing option payoffs.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
 
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 
 
 def simulate_bs_terminal(
@@ -17,7 +17,7 @@ def simulate_bs_terminal(
     params: BSParams,
     n_paths: int,
     seed: Optional[int] = None
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Simulate terminal prices under Black-Scholes using exact one-step solution.
 
     Uses the exact Black-Scholes solution for terminal price:
@@ -100,7 +100,7 @@ def simulate_bs_two_step(
     T2: float,
     n_paths: int,
     seed: Optional[int] = None
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Simulate Black-Scholes prices at two time points for barrier options.
 
     Performs two-step simulation:
@@ -239,7 +239,7 @@ def simulate_bs_paths(
     n_steps: int,
     n_paths: int,
     seed: Optional[int] = None,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Simulate full Black-Scholes paths with n_steps between 0 and T.
 
     Uses exact Black-Scholes increments per step to generate the full price paths.

@@ -186,6 +186,7 @@ def set_random_seeds(seed: int) -> None:
         Random seed value.
     """
     import random
+
     import numpy as np
 
     random.seed(seed)

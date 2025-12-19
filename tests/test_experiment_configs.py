@@ -8,7 +8,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-import torch
 
 from diffml.config import TrainingConfig
 from diffml.config_experiments import (

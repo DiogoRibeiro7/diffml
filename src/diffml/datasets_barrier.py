@@ -4,13 +4,13 @@ This module provides functions to generate training and validation datasets
 for barrier option pricing using differential machine learning.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 from diffml.simulation import simulate_bs_two_step
 
 
@@ -25,7 +25,7 @@ def make_barrier_dataset(
     x_max: float = 1.6,
     n_paths_per_x: int = 10,
     seed: Optional[int] = 1234
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for down-and-out call barrier option under Black-Scholes.
 
     Creates a dataset for a down-and-out call option where the option knocks out
@@ -196,7 +196,7 @@ class BarrierOptionDataset(Dataset):
         """
         return self.n_samples
 
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def __getitem__(self, idx: int) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Get a sample from the dataset.
 
         Parameters
@@ -228,7 +228,7 @@ def create_barrier_dataloaders(
     params: Optional[BSParams] = None,
     n_paths_per_x: int = 10000,
     **kwargs,
-) -> Tuple[DataLoader, DataLoader]:
+) -> tuple[DataLoader, DataLoader]:
     """Create training and validation dataloaders for barrier options.
 
     Parameters

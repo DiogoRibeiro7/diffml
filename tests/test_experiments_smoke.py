@@ -366,7 +366,7 @@ class TestExperimentReproducibility:
         )
 
         # Data should be identical
-        for t1, t2 in zip(data1, data2):
+        for t1, t2 in zip(data1, data2, strict=False):
             assert torch.allclose(t1, t2)
 
         # Mock dataset always returns same data

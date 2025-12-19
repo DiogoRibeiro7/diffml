@@ -5,13 +5,13 @@ for basket option pricing using differential machine learning.
 Uses Bachelier model for multi-dimensional basket digital options.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 
 
 def make_basket_digital_dataset(
@@ -25,7 +25,7 @@ def make_basket_digital_dataset(
     x_high: float = 120.0,
     n_paths_per_x: int = 10,
     seed: Optional[int] = 1234
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for high-dimensional Bachelier basket digital option.
 
     Uses Bachelier (arithmetic Brownian motion) model:
@@ -240,7 +240,7 @@ class BasketOptionDataset(Dataset):
         """
         return self.n_samples
 
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
+    def __getitem__(self, idx: int) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
         """Get a sample from the dataset.
 
         Parameters
@@ -271,7 +271,7 @@ def create_basket_dataloaders(
     params: Optional[BSParams] = None,
     n_paths_per_x: int = 10000,
     **kwargs,
-) -> Tuple[DataLoader, DataLoader]:
+) -> tuple[DataLoader, DataLoader]:
     """Create training and validation dataloaders for basket options.
 
     Parameters

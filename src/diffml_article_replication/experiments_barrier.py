@@ -11,7 +11,7 @@ from .experiments_registry import register_experiment
 @register_experiment("barrier")
 def run_barrier_experiment(config: ExperimentConfig) -> None:
     """Run the barrier option experiment using the shared implementation."""
-    _barrier_impl(config)
+    _barrier_impl(config.to_core_config())
 
 
 __all__ = ["run_barrier_experiment"]

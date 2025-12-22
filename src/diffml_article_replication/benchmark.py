@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from typing import Literal
+from typing import Literal, TypeAlias, cast
 
 import torch
 from torch import Tensor
@@ -16,6 +16,15 @@ from diffml.networks import PricingNet
 from diffml.training import nn_value_delta_gamma, rmse, train_model
 
 from .baselines import BaselineModel, MLPBaseline, PolynomialRegressionBaseline
+
+NeuralModelMode: TypeAlias = Literal["standard", "delta_pathwise", "delta_lrm"]
+ModelMode: TypeAlias = Literal[
+    "standard",
+    "delta_pathwise",
+    "delta_lrm",
+    "baseline_poly",
+    "baseline_mlp",
+]
 
 
 @dataclass(frozen=True)
@@ -41,7 +50,7 @@ class _DigitalBenchmarkConfig:
 
 def run_digital_benchmark(
     seeds: list[int],
-    model_modes: list[str],
+    model_modes: list[ModelMode],
     *,
     config: _DigitalBenchmarkConfig | None = None,
 ) -> dict[str, dict[str, float]]:
@@ -81,11 +90,11 @@ def run_digital_benchmark(
 
 def format_benchmark_table(results: dict[str, dict[str, float]]) -> str:
     """Return a formatted string summarising benchmark results."""
-    header = "Model".ljust(20) + "Price RMSE (mean±std)".ljust(30) + "Delta RMSE (mean±std)"
+    header = "Model".ljust(20) + "Price RMSE (mean+/-std)".ljust(30) + "Delta RMSE (mean+/-std)"
     lines = [header, "-" * len(header)]
     for name, stats in results.items():
-        price = f"{stats['price_rmse_mean']:.4f} ± {stats['price_rmse_std']:.4f}"
-        delta = f"{stats['delta_rmse_mean']:.4f} ± {stats['delta_rmse_std']:.4f}"
+        price = f"{stats['price_rmse_mean']:.4f} +/- {stats['price_rmse_std']:.4f}"
+        delta = f"{stats['delta_rmse_mean']:.4f} +/- {stats['delta_rmse_std']:.4f}"
         lines.append(f"{name.ljust(20)}{price.ljust(30)}{delta}")
     return "\n".join(lines)
 
@@ -121,7 +130,10 @@ def run_lambda_delta_sweep(
     return results
 
 
-def _generate_digital_data(seed: int, params: _DigitalBenchmarkConfig):
+def _generate_digital_data(
+    seed: int,
+    params: _DigitalBenchmarkConfig,
+) -> dict[str, tuple[Tensor, ...]]:
     bs_params = BSParams(r=0.0, sigma=0.2, T=1.0 / 3.0)
     x_train, price_train, delta_pw_train, delta_lrm_train = make_digital_dataset(
         m=params.m_train,
@@ -147,13 +159,14 @@ def _generate_digital_data(seed: int, params: _DigitalBenchmarkConfig):
 
 
 def _run_single_model(
-    mode: str,
+    mode: ModelMode,
     params: _DigitalBenchmarkConfig,
     data: dict[str, tuple[Tensor, ...]],
     device: torch.device,
 ) -> tuple[float, float]:
     if mode in {"standard", "delta_pathwise", "delta_lrm"}:
-        return _train_eval_neural_model(mode, params.training, data, device)
+        neural_mode = cast(NeuralModelMode, mode)
+        return _train_eval_neural_model(neural_mode, params.training, data, device)
     if mode == "baseline_poly":
         return _evaluate_baseline(PolynomialRegressionBaseline(degree=3), data)
     if mode == "baseline_mlp":
@@ -162,7 +175,7 @@ def _run_single_model(
 
 
 def _train_eval_neural_model(
-    mode: Literal["standard", "delta_pathwise", "delta_lrm"],
+    mode: NeuralModelMode,
     training_cfg: TrainingConfig,
     data: dict[str, tuple[Tensor, ...]],
     device: torch.device,
@@ -179,7 +192,6 @@ def _train_eval_neural_model(
             x_test.to(device),
             compute_delta=True,
             compute_gamma=False,
-            device=device,
         )
     if preds_delta is None:
         raise RuntimeError("Expected delta predictions for neural model")

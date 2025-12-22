@@ -95,7 +95,9 @@ def nn_value_delta_gamma(
     gamma: Tensor | None = None
 
     grad_enabled_initial = torch.is_grad_enabled()
-    grad_context = torch.enable_grad() if not grad_enabled_initial else contextlib.nullcontext()
+    grad_context = (
+        contextlib.nullcontext() if grad_enabled_initial else torch.set_grad_enabled(True)
+    )
 
     with grad_context:
         if compute_delta or compute_gamma:

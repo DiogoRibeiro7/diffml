@@ -3,24 +3,21 @@
 from __future__ import annotations
 
 import importlib
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-if False:  # pragma: no cover - typing imports
-    import tomllib
-
-import sys
-
 if sys.version_info >= (3, 11):
-    import tomllib  # type: ignore
+    import tomllib
 else:  # pragma: no cover
     try:
-        import tomli as tomllib  # type: ignore
+        import tomli as tomllib
     except ImportError as exc:  # pragma: no cover
         raise ImportError("Python < 3.11 requires the 'tomli' package") from exc
 
 from diffml.config import TrainingConfig
+from diffml.config_experiments import ExperimentConfig as CoreExperimentConfig
 
 
 @dataclass(slots=True)
@@ -64,6 +61,31 @@ class ExperimentConfig:
             raise ValueError("sigma must be positive")
         if self.T <= 0:
             raise ValueError("T must be positive")
+
+    def to_core_config(self) -> CoreExperimentConfig:
+        """Return a :mod:`diffml` ExperimentConfig with equivalent values."""
+        return CoreExperimentConfig(
+            name=self.name,
+            seed=self.seed,
+            training=self.training,
+            m_train=self.m_train,
+            m_test=self.m_test,
+            n_paths_train=self.n_paths_train,
+            n_paths_test=self.n_paths_test,
+            K=self.K,
+            B=self.B,
+            H=self.H,
+            L=self.L,
+            d=self.d,
+            n_steps=self.n_steps,
+            eps_multipliers=self.eps_multipliers,
+            x_min=self.x_min,
+            x_max=self.x_max,
+            r=self.r,
+            sigma=self.sigma,
+            T=self.T,
+            extra_params=dict(self.extra_params),
+        )
 
 
 def load_experiment_config(path: str) -> ExperimentConfig:

@@ -11,7 +11,7 @@ from .experiments_registry import register_experiment
 @register_experiment("digital")
 def run_digital_experiment(config: ExperimentConfig) -> None:
     """Run the digital option experiment using the shared implementation."""
-    _digital_impl(config)
+    _digital_impl(config.to_core_config())
 
 
 __all__ = ["run_digital_experiment"]

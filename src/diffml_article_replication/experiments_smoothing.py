@@ -11,7 +11,7 @@ from .experiments_registry import register_experiment
 @register_experiment("smoothing")
 def run_smoothing_experiment(config: ExperimentConfig) -> None:
     """Run the smoothing experiment with the consolidated implementation."""
-    _smoothing_impl(config)
+    _smoothing_impl(config.to_core_config())
 
 
 __all__ = ["run_smoothing_experiment"]

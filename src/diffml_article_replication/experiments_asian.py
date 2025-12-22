@@ -11,7 +11,7 @@ from .experiments_registry import register_experiment
 @register_experiment("asian")
 def run_asian_experiment(config: ExperimentConfig) -> None:
     """Run the arithmetic Asian option experiment."""
-    _asian_impl(config)
+    _asian_impl(config.to_core_config())
 
 
 __all__ = ["run_asian_experiment"]

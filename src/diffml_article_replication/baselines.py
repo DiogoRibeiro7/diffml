@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable, cast
 
 import torch
 from torch import Tensor
@@ -73,7 +73,7 @@ class MLPBaseline:
         criterion = torch.nn.MSELoss()
         for _ in range(self.n_epochs):
             optimizer.zero_grad()
-            preds = self.model(x)
+            preds = cast(Tensor, self.model(x))
             loss = criterion(preds, y)
             loss.backward()
             optimizer.step()
@@ -82,7 +82,7 @@ class MLPBaseline:
         """Return network predictions in eval mode."""
         self.model.eval()
         with torch.no_grad():
-            return self.model(x)
+            return cast(Tensor, self.model(x))
 
 
 __all__ = ["BaselineModel", "PolynomialRegressionBaseline", "MLPBaseline"]

@@ -99,7 +99,6 @@ def simulate_bs_terminal_shared(
     seed: int | None = None
 ) -> tuple[Tensor, Tensor]:
     """Simulate terminal prices using shocks shared across the ``spots`` batch."""
-
     if spots.dim() != 2 or spots.shape[1] != 1:
         raise ValueError(f"spots must have shape (m, 1), got {spots.shape}")
     if n_paths <= 0:

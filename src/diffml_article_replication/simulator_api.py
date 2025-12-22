@@ -14,7 +14,7 @@ from typing import Protocol
 import torch
 from torch import Tensor
 
-from diffml.config import BSParams, DEFAULT_DTYPE, get_device
+from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 from diffml.simulation import simulate_bs_terminal, simulate_bs_two_step
 
 
@@ -38,12 +38,12 @@ class InstrumentedSimulator(Protocol):
         n_paths: int,
         seed: int | None = None,
     ) -> SimulationResult:  # pragma: no cover - protocol definition only
+        """Simulate paths for features ``x`` and return payoffs/deltas."""
         ...
 
 
 def _prepare_inputs(x: Tensor) -> Tensor:
     """Return ``x`` as a float64 tensor on the default training device."""
-
     if x.dim() != 2:
         raise ValueError(f"Expected 2D input features of shape (m, d), got {x.shape}")
     device = get_device()
@@ -63,6 +63,7 @@ class DigitalCallSimulator:
     default_n_paths: int = 10_000
 
     def simulate(self, x: Tensor, n_paths: int, seed: int | None = None) -> SimulationResult:
+        """Simulate and price digital call payoffs with optional instrumentation."""
         if n_paths <= 0:
             if self.default_n_paths <= 0:
                 raise ValueError("n_paths must be positive")
@@ -105,6 +106,7 @@ class BarrierCallSimulator:
     default_n_paths: int = 10_000
 
     def simulate(self, x: Tensor, n_paths: int, seed: int | None = None) -> SimulationResult:
+        """Simulate two-step barrier paths and compute payoffs and deltas."""
         if n_paths <= 0:
             if self.default_n_paths <= 0:
                 raise ValueError("n_paths must be positive")
@@ -127,14 +129,14 @@ class BarrierCallSimulator:
         )
         device = S1.device
         discount = _discount_factor(self.params.r, self.T2, device=device)
-        survived = (S1 > self.barrier).to(dtype=DEFAULT_DTYPE)
+        survived = (self.barrier < S1).to(dtype=DEFAULT_DTYPE)
         call_payoff = torch.maximum(
             S2 - self.strike,
             torch.tensor(0.0, dtype=DEFAULT_DTYPE, device=device),
         )
         payoffs = discount * survived * call_payoff
 
-        itm = (S2 > self.strike).to(dtype=DEFAULT_DTYPE)
+        itm = (self.strike < S2).to(dtype=DEFAULT_DTYPE)
         delta_paths = discount * survived * itm * (S2 / features)
         delta_pw = delta_paths
 
@@ -167,6 +169,7 @@ class BasketDigitalSimulator:
     default_n_paths: int = 5_000
 
     def simulate(self, x: Tensor, n_paths: int, seed: int | None = None) -> SimulationResult:
+        """Simulate correlated basket paths and return payoffs with LRM deltas."""
         if n_paths <= 0:
             if self.default_n_paths <= 0:
                 raise ValueError("n_paths must be positive")

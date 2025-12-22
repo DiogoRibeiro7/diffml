@@ -13,7 +13,7 @@ from diffml.config import DEFAULT_DTYPE, TrainingConfig, get_device
 from diffml.networks import PricingNet
 from diffml.training import nn_value_delta_gamma, train_model
 
-from .simulator_api import InstrumentedSimulator, SimulationResult
+from .simulator_api import InstrumentedSimulator
 
 Mode = Literal["standard", "delta_pathwise", "delta_lrm", "gamma_pwlr"]
 
@@ -29,7 +29,6 @@ def diffml_price(
     seed: int | None = None,
 ) -> tuple[Tensor, Tensor, Tensor | None]:
     """Train a neural network on simulator-generated labels and price ``x_test``."""
-
     device = get_device()
     dtype = DEFAULT_DTYPE
     x_train_device = x_train.to(device=device, dtype=dtype).detach().clone()

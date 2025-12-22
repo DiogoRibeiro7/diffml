@@ -25,7 +25,6 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     """Entry-point for running Asian and lookback experiments."""
-
     parser = _build_parser()
     args = parser.parse_args()
 

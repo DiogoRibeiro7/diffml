@@ -5,8 +5,9 @@ demonstrating differential ML with Bachelier model on high-dimensional inputs.
 """
 
 
-import torch
 from time import perf_counter
+
+import torch
 from torch.utils.data import TensorDataset
 
 from diffml.config import TrainingConfig, get_device, set_default_dtype
@@ -243,10 +244,7 @@ def run_basket_high_dim_experiment(
     n_paths_train: int = 10,
     n_paths_test: int = 1000,
 ) -> None:
-    """
-    Run basket digital experiments for multiple dimensions and report runtime and RMSE.
-    """
-
+    """Run basket digital experiments for multiple dimensions and report runtime and RMSE."""
     dimensions = dims or [20, 50, 100]
     if not dimensions:
         raise ValueError("dims must contain at least one dimension")

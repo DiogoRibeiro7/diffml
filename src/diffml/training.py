@@ -5,7 +5,8 @@ neural networks with differential machine learning.
 """
 
 import contextlib
-from typing import Any, Iterator, Literal, TypeAlias, cast
+from collections.abc import Iterator
+from typing import Any, Literal, TypeAlias, cast
 
 import torch
 import torch.nn as nn
@@ -25,7 +26,6 @@ Batch: TypeAlias = tuple[Tensor, ...]
 @contextlib.contextmanager
 def maybe_mixed_precision(device: torch.device) -> Iterator[None]:
     """Enable CUDA autocast when running on GPU, otherwise act as a no-op."""
-
     if device.type == "cuda":
         with torch.autocast(device_type="cuda", dtype=torch.float16):
             yield

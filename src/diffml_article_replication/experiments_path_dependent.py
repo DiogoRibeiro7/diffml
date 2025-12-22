@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from dataclasses import replace
-from typing import Callable, Sequence
 
 import torch
 from torch import Tensor
@@ -22,13 +22,11 @@ DatasetBuilder = Callable[..., tuple[Tensor, Tensor, Tensor, Tensor]]
 
 def _compute_rmse(pred: Tensor, target: Tensor) -> float:
     """Return root-mean-squared error between two tensors."""
-
     return rmse(pred, target)
 
 
 def _print_rmse_table(title: str, rows: Sequence[tuple[str, float, float]]) -> None:
     """Print a paper-style RMSE table."""
-
     print(f"\n{title}")
     header = f"{'model':<20} {'price_rmse':>12} {'delta_rmse':>12}"
     print(header)
@@ -50,7 +48,6 @@ def _train_and_evaluate_variant(
     device: torch.device,
 ) -> tuple[str, float, float]:
     """Train the requested model variant and return its RMSE metrics."""
-
     config = replace(base_config, lambda_delta=lambda_delta)
     model = PricingNet(input_dim=x_test.shape[1], hidden_dim=32, n_hidden=3)
     train_model(model, dataset, config, mode=mode, device=device)
@@ -81,7 +78,6 @@ def _run_path_dependent_experiment(
     lambda_lrm: float,
 ) -> None:
     """Shared orchestration for path-dependent experiments."""
-
     set_default_dtype()
     device = get_device()
 
@@ -155,7 +151,6 @@ def run_arithmetic_asian_experiment(
     lambda_lrm: float = 1.0,
 ) -> None:
     """Run the arithmetic Asian call pricing experiment."""
-
     bs_params = params or BSParams(r=0.0, sigma=0.20, T=1.0 / 3.0)
     base_config = training_config or TrainingConfig(
         n_epochs=2000,
@@ -216,7 +211,6 @@ def run_lookback_call_experiment(
     lambda_lrm: float = 1.0,
 ) -> None:
     """Run the fixed-strike lookback call pricing experiment."""
-
     bs_params = params or BSParams(r=0.0, sigma=0.20, T=1.0 / 3.0)
     base_config = training_config or TrainingConfig(
         n_epochs=2000,

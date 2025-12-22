@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import torch
 import pytest
+import torch
 from torch.utils.data import TensorDataset
 
 from diffml.config import BSParams, TrainingConfig, set_default_dtype

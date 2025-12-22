@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import torch
+from diffml_article_replication.api import diffml_price
+from diffml_article_replication.simulator_api import SimulationResult
 from torch import Tensor
 
 from diffml.config import TrainingConfig
-from diffml_article_replication.api import diffml_price
-from diffml_article_replication.simulator_api import SimulationResult
 
 
 class _DeterministicDigitalSimulator:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable, cast
+from typing import Protocol, cast, runtime_checkable
 
 import torch
 from torch import Tensor

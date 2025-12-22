@@ -32,7 +32,7 @@ jobs:
         run: poetry build
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.9.0
+        uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
           # IMPORTANT: The workflow will fail if PYPI_API_TOKEN is not set in repository secrets
           # To set up:

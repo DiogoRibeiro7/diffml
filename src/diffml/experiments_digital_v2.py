@@ -5,6 +5,7 @@ demonstrating differential ML for discontinuous payoffs, now with
 configuration-based setup.
 """
 
+from typing import TypedDict
 
 import torch
 from torch.utils.data import TensorDataset
@@ -15,7 +16,7 @@ from diffml.config_experiments import ExperimentConfig
 from diffml.datasets_digital import make_digital_dataset
 from diffml.experiments_registry import register_experiment
 from diffml.networks import PricingNet
-from diffml.training import nn_value_delta_gamma, rmse, train_model
+from diffml.training import Mode, nn_value_delta_gamma, rmse, train_model
 
 
 @register_experiment("digital")
@@ -93,11 +94,17 @@ def run_digital_experiment(config: ExperimentConfig) -> None:
         "n_hidden": 4
     }
 
+    class ExperimentMetrics(TypedDict):
+        price_rmse: float
+        delta_rmse: float
+        model: PricingNet
+
     # Store results
-    results = {}
+    results: dict[str, ExperimentMetrics] = {}
 
     # Train three models with different approaches
-    approaches = [
+    Approach = tuple[str, Mode, float]
+    approaches: list[Approach] = [
         ("Standard ML", "standard", 0.0),
         ("Pathwise DML", "delta_pathwise", config.training.lambda_delta),
         ("LRM DML", "delta_lrm", config.training.lambda_delta)
@@ -123,7 +130,7 @@ def run_digital_experiment(config: ExperimentConfig) -> None:
             dataset = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
         # Train model
-        model = train_model(model, dataset, train_config, mode=mode)
+        train_model(model, dataset, train_config, mode=mode)
 
         # Evaluate on test set
         model.eval()
@@ -132,6 +139,8 @@ def run_digital_experiment(config: ExperimentConfig) -> None:
             price_pred, delta_pred, _ = nn_value_delta_gamma(
                 model, x_test_grad, compute_delta=True, compute_gamma=False
             )
+        if delta_pred is None:
+            raise RuntimeError("Expected delta tensor for configured experiment evaluation.")
 
         # Compute errors
         price_rmse = rmse(price_pred, price_test_true)
@@ -198,11 +207,16 @@ def run_barrier_experiment(config: ExperimentConfig) -> None:
 
     # Generate training data
     print("\nGenerating training data...")
+    T1 = params.T / 2.0
+    T2 = params.T
+
     x_train, price_train, delta_pw_train, delta_lrm_train = make_barrier_dataset(
         m=config.m_train,
         K=K,
         B=B,
         params=params,
+        T1=T1,
+        T2=T2,
         x_min=config.x_min,
         x_max=config.x_max,
         n_paths_per_x=config.n_paths_train,
@@ -217,7 +231,7 @@ def run_barrier_experiment(config: ExperimentConfig) -> None:
     dataset = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
     # Use pathwise mode for barrier options
-    model = train_model(model, dataset, config.training, mode="delta_pathwise")
+    train_model(model, dataset, config.training, mode="delta_pathwise")
 
     print("\nBarrier option experiment completed!")
 
@@ -254,7 +268,7 @@ def run_basket_experiment(config: ExperimentConfig) -> None:
 
     # Generate training data
     print("\nGenerating training data...")
-    x_train, price_train, delta_pw_train = make_basket_digital_dataset(
+    x_train, price_train, delta_pw_train, delta_lrm_train = make_basket_digital_dataset(
         m=config.m_train,
         d=d,
         K=K,
@@ -271,12 +285,9 @@ def run_basket_experiment(config: ExperimentConfig) -> None:
 
     # Create and train model
     model = PricingNet(input_dim=d, hidden_dim=40, n_hidden=4)
+    dataset = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
-    # For basket options, we only have pathwise delta
-    delta_lrm_dummy = torch.zeros_like(delta_pw_train)
-    dataset = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_dummy)
-
-    model = train_model(model, dataset, config.training, mode="delta_pathwise")
+    train_model(model, dataset, config.training, mode="delta_pathwise")
 
     print("\nBasket option experiment completed!")
 
@@ -332,7 +343,7 @@ def run_smoothing_experiment(config: ExperimentConfig) -> None:
         # Train model
         model = PricingNet(input_dim=1, hidden_dim=20, n_hidden=4)
         dataset = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
-        model = train_model(model, dataset, config.training, mode="delta_pathwise")
+        train_model(model, dataset, config.training, mode="delta_pathwise")
 
         results[eps_mult] = model
 
@@ -395,6 +406,6 @@ def run_asian_experiment(config: ExperimentConfig) -> None:
     dataset = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
     # Train with standard ML to avoid gradient issues
-    model = train_model(model, dataset, config.training, mode="standard")
+    train_model(model, dataset, config.training, mode="standard")
 
     print("\nAsian option experiment completed!")

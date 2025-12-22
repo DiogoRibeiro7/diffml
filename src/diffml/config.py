@@ -4,7 +4,7 @@ This module provides configuration settings, hyperparameters, and utility
 functions for managing experiment configurations and device selection.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import torch
 
@@ -50,15 +50,10 @@ class NetworkConfig:
     """
 
     input_dim: int = 1
-    hidden_dims: list[int] = None
+    hidden_dims: list[int] = field(default_factory=lambda: [50, 50, 50])
     output_dim: int = 1
     activation: str = "relu"
     dropout_rate: float = 0.0
-
-    def __post_init__(self) -> None:
-        """Initialize default hidden dimensions if not provided."""
-        if self.hidden_dims is None:
-            self.hidden_dims = [50, 50, 50]
 
 
 @dataclass
@@ -79,6 +74,8 @@ class TrainingConfig:
         Weight for delta (first derivative) loss term.
     lambda_gamma : float
         Weight for gamma (second derivative) loss term.
+    use_mixed_precision : bool
+        Enable CUDA automatic mixed precision during training.
     """
 
     n_epochs: int = 2000
@@ -87,6 +84,16 @@ class TrainingConfig:
     lr_min: float = 1e-6
     lambda_delta: float = 0.0  # Weight for delta loss
     lambda_gamma: float = 0.0  # Weight for gamma loss
+    use_mixed_precision: bool = False  # Enable optional mixed precision on CUDA
+
+    @property
+    def learning_rate(self) -> float:
+        """Backward-compatible alias for lr_initial."""
+        return self.lr_initial
+
+    @learning_rate.setter
+    def learning_rate(self, value: float) -> None:
+        self.lr_initial = value
 
 
 @dataclass
@@ -132,14 +139,14 @@ class ExperimentConfig:
     """
 
     name: str = "default_experiment"
-    network: NetworkConfig = None
-    training: TrainingConfig = None
-    simulation: SimulationConfig = None
+    network: NetworkConfig = field(default_factory=NetworkConfig)
+    training: TrainingConfig = field(default_factory=TrainingConfig)
+    simulation: SimulationConfig = field(default_factory=SimulationConfig)
     output_dir: str = "output"
     device: str | None = None
 
     def __post_init__(self) -> None:
-        """Initialize default configurations if not provided."""
+        """Validate configuration after initialization."""
         if self.network is None:
             self.network = NetworkConfig()
         if self.training is None:
@@ -148,7 +155,7 @@ class ExperimentConfig:
             self.simulation = SimulationConfig()
 
 
-def get_device() -> torch.device:
+def get_device(preferred: str | None = None) -> torch.device:
     """Get the appropriate torch device for computation.
 
     Returns CUDA device if available, otherwise CPU device.
@@ -164,7 +171,18 @@ def get_device() -> torch.device:
     >>> print(device)
     cuda  # or cpu if CUDA not available
     """
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if preferred is None or preferred == "auto":
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    normalized = preferred.lower()
+    if normalized == "cuda":
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        return torch.device("cpu")
+    if normalized == "cpu":
+        return torch.device("cpu")
+
+    raise ValueError(f"Unknown device preference: {preferred}")
 
 
 def set_default_dtype() -> None:

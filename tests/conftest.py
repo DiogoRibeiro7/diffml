@@ -8,8 +8,10 @@ from pathlib import Path
 import pytest
 import torch
 
-# Add parent directory to path to import the package
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root and src directory to path so ``diffml`` is importable without installation
+_PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(_PROJECT_ROOT))
+sys.path.insert(0, str(_PROJECT_ROOT / "src"))
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -47,25 +49,25 @@ def configure_test_environment() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def device():
+def device() -> torch.device:
     """Fixture for torch device."""
     return torch.device("cpu")
 
 
 @pytest.fixture
-def batch_size():
+def batch_size() -> int:
     """Standard batch size for tests."""
     return 32
 
 
 @pytest.fixture
-def seed():
+def seed() -> int:
     """Random seed for reproducibility in tests."""
     return 42
 
 
 @pytest.fixture
-def disable_cuda(monkeypatch) -> None:
+def disable_cuda(monkeypatch: pytest.MonkeyPatch) -> None:
     """Disable CUDA for tests that should run on CPU only."""
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
 
@@ -89,7 +91,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 def pytest_collection_modifyitems(
     config: pytest.Config,
-    items: list
+    items: list[pytest.Item]
 ) -> None:
     """Modify test collection based on command line options."""
     # Skip slow tests unless --run-slow is provided

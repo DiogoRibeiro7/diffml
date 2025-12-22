@@ -136,7 +136,7 @@ def run_gamma_experiment() -> None:
 
     config.lambda_delta = 0.0
     config.lambda_gamma = 0.0
-    model_standard = train_model(
+    train_model(
         model=model_standard,
         dataset=dataset_standard,
         config=config,
@@ -149,6 +149,8 @@ def run_gamma_experiment() -> None:
         pred_price_standard, pred_delta_standard, pred_gamma_standard = nn_value_delta_gamma(
             model_standard, x_test, compute_delta=True, compute_gamma=True
         )
+    if pred_delta_standard is None or pred_gamma_standard is None:
+        raise RuntimeError("Expected both delta and gamma tensors for standard gamma evaluation.")
 
     price_rmse_standard = rmse(pred_price_standard, price_test_true)
     delta_rmse_standard = rmse(pred_delta_standard, delta_test_true)
@@ -170,7 +172,7 @@ def run_gamma_experiment() -> None:
 
     config.lambda_delta = 1.0
     config.lambda_gamma = 0.0
-    model_delta = train_model(
+    train_model(
         model=model_delta,
         dataset=dataset_delta,
         config=config,
@@ -183,6 +185,8 @@ def run_gamma_experiment() -> None:
         pred_price_delta, pred_delta_delta, pred_gamma_delta = nn_value_delta_gamma(
             model_delta, x_test, compute_delta=True, compute_gamma=True
         )
+    if pred_delta_delta is None or pred_gamma_delta is None:
+        raise RuntimeError("Expected both delta and gamma tensors for delta-mode evaluation.")
 
     price_rmse_delta = rmse(pred_price_delta, price_test_true)
     delta_rmse_delta = rmse(pred_delta_delta, delta_test_true)
@@ -204,7 +208,7 @@ def run_gamma_experiment() -> None:
 
     config.lambda_delta = 1.0
     config.lambda_gamma = 0.5  # Gamma regularization weight
-    model_gamma = train_model(
+    train_model(
         model=model_gamma,
         dataset=dataset_gamma,
         config=config,
@@ -217,6 +221,8 @@ def run_gamma_experiment() -> None:
         pred_price_gamma, pred_delta_gamma, pred_gamma_gamma = nn_value_delta_gamma(
             model_gamma, x_test, compute_delta=True, compute_gamma=True
         )
+    if pred_delta_gamma is None or pred_gamma_gamma is None:
+        raise RuntimeError("Expected both delta and gamma tensors for gamma-mode evaluation.")
 
     price_rmse_gamma = rmse(pred_price_gamma, price_test_true)
     delta_rmse_gamma = rmse(pred_delta_gamma, delta_test_true)

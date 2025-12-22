@@ -5,6 +5,8 @@ differential machine learning experiments.
 """
 
 
+from __future__ import annotations
+
 import torch
 import torch.nn as nn
 
@@ -63,7 +65,7 @@ class PricingNet(nn.Module):
         self.n_hidden = n_hidden
 
         # Build the network layers
-        layers = []
+        layers: list[nn.Module] = []
 
         # Input layer
         layers.append(nn.Linear(input_dim, hidden_dim))
@@ -109,7 +111,8 @@ class PricingNet(nn.Module):
             )
 
         # Forward pass through the network
-        return self.network(x)
+        output = self.network(x)
+        return torch.as_tensor(output)
 
 
 class FeedForwardNet(nn.Module):
@@ -161,7 +164,7 @@ class FeedForwardNet(nn.Module):
         nn.Module
             Activation function module.
         """
-        activations = {
+        activations: dict[str, nn.Module] = {
             "relu": nn.ReLU(),
             "tanh": nn.Tanh(),
             "sigmoid": nn.Sigmoid(),
@@ -179,7 +182,7 @@ class FeedForwardNet(nn.Module):
         nn.Sequential
             Sequential container of network layers.
         """
-        layers = []
+        layers: list[nn.Module] = []
         prev_dim = self.input_dim
 
         # Hidden layers
@@ -214,7 +217,8 @@ class FeedForwardNet(nn.Module):
         torch.Tensor
             Output tensor of shape (batch_size, output_dim).
         """
-        return self.layers(x)
+        output = self.layers(x)
+        return torch.as_tensor(output)
 
 
 class DifferentialNet(nn.Module):
@@ -278,7 +282,7 @@ class DifferentialNet(nn.Module):
         else:
             grad_indices = list(range(x.shape[1]))
 
-        derivatives = []
+        derivatives: list[torch.Tensor] = []
         for output_idx in range(values.shape[1]):
             output_derivatives = []
             for input_idx in grad_indices:
@@ -293,9 +297,9 @@ class DifferentialNet(nn.Module):
                 output_derivatives.append(grad)
             derivatives.append(torch.stack(output_derivatives, dim=-1))
 
-        derivatives = torch.stack(derivatives, dim=1)
+        derivative_stack = torch.stack(derivatives, dim=1)
 
-        return values, derivatives
+        return values, derivative_stack
 
 
 class ResidualBlock(nn.Module):
@@ -320,14 +324,14 @@ class ResidualBlock(nn.Module):
         """Initialize the residual block."""
         super().__init__()
 
-        activations = {
+        activations: dict[str, nn.Module] = {
             "relu": nn.ReLU(),
             "tanh": nn.Tanh(),
             "elu": nn.ELU(),
             "leaky_relu": nn.LeakyReLU(),
         }
 
-        self.block = nn.Sequential(
+        self.block: nn.Sequential = nn.Sequential(
             nn.Linear(dim, dim),
             nn.BatchNorm1d(dim),
             activations.get(activation.lower(), nn.ReLU()),
@@ -351,7 +355,8 @@ class ResidualBlock(nn.Module):
         torch.Tensor
             Output tensor with residual connection.
         """
-        return self.activation(x + self.block(x))
+        residual = self.block(x)
+        return torch.as_tensor(self.activation(x + residual))
 
 
 class ResNet(nn.Module):

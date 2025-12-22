@@ -2,30 +2,36 @@
 
 This guide defines how we document the public API, inline commentary, and typing
 expectations across the DiffML codebase. Follow it for every change that touches
-`src/diffml`, CLI entrypoints under `scripts/`, or example notebooks/scripts.
+`src/diffml`, `src/diffml_article_replication`, CLI entrypoints under `scripts/`,
+or demo notebooks/scripts inside `examples/`.
 
 ## Scope and Definitions
 
-- **Public packages/modules** – every Python module inside `src/diffml` whose
-  file-name does not start with `_`, plus CLI helpers under `scripts/` and demo
-  scripts under `examples/`. Modules exported in `diffml/__init__.py` are always
-  considered public even if they live deeper in the tree.
+- **Public packages/modules** – every Python module inside `src/diffml` or
+  `src/diffml_article_replication` whose file name does not start with `_`,
+  plus CLI helpers under `scripts/` and demo scripts under `examples/`.
+  Modules exported in `diffml.__all__`, `diffml_article_replication.__all__`,
+  or referenced by CLI entry points are always considered public even if they
+  live deeper in the tree.
 - **Public objects** – classes, functions, dataclasses, and constants that are
-  not prefixed with `_` *and* are either imported in `diffml.__all__`, referenced
-  by the CLI, or used by the documentation. Treat helper functions inside public
-  modules as public unless the function name starts with `_`.
+  not prefixed with `_` *and* are either imported in `diffml.__all__` /
+  `diffml_article_replication.__all__`, referenced by the CLI/tests, or used by
+  the documentation. Treat helper functions inside public modules as public
+  unless the function name starts with `_`.
 - **Private objects** – anything prefixed with `_` or contained in tests.
   Private helpers may still carry docstrings if it increases clarity but they
   are exempt from strict coverage.
 
 Only the public surface is required to maintain full docstring and comment
 coverage. Tests, build scripts, and `__pycache__` artifacts are excluded.
+If you add a new public module, update `docs/DOC_COVERAGE.md` in the same PR.
 
 ## Docstring Standard (NumPy)
 
 We use the **NumPy docstring style** everywhere. Docstrings must be accurate,
-concise, and reflect actual behavior / types. Borrowing type hints from the
-signature is acceptable, but the *meaning* of each argument must be described.
+concise, have an imperative first line (D401), and reflect actual behavior /
+types. Borrowing type hints from the signature is acceptable, but the *meaning*
+of each argument must be described.
 
 ### Module Docstrings
 
@@ -125,7 +131,8 @@ Before opening a PR:
    without a leading `_` has a NumPy-style docstring that matches the template.
 2. Inline comments only appear where they explain reasoning or invariants.
 3. Type hints cover all public callables.
-4. When you introduce new public APIs, update `docs/DOC_COVERAGE.md`.
+4. When you introduce new public APIs (including the replication package),
+   update `docs/DOC_COVERAGE.md`.
 5. Run `ruff check --select D --respect-gitignore` to verify lint enforcement.
 
 ## Enforcement

@@ -14,6 +14,9 @@ from diffml.datasets_smoothing import make_smoothed_digital_dataset
 from diffml.networks import PricingNet
 from diffml.training import nn_value_delta_gamma, rmse, train_model
 
+# Default epsilon multipliers used across experiments (patched in tests)
+eps_multipliers = [0.2, 0.5, 1.0, 2.0, 5.0]
+
 
 def run_smoothing_experiment() -> None:
     """Run smoothing experiment comparing different epsilon multipliers for ramp smoothing.
@@ -73,9 +76,6 @@ def run_smoothing_experiment() -> None:
         "n_hidden": 4
     }
 
-    # Epsilon multipliers to test
-    eps_multipliers = [0.2, 0.5, 1.0, 2.0, 5.0]
-
     # Store all results
     all_results = {}
 
@@ -89,7 +89,7 @@ def run_smoothing_experiment() -> None:
         m_train = 512
         n_paths_train = 10
 
-        x_train, price_train, _, delta_lrm_train = make_smoothed_digital_dataset(
+        x_train, price_train, delta_pw_train, delta_lrm_train = make_smoothed_digital_dataset(
             m=m_train,
             K=K,
             params=params,
@@ -112,12 +112,10 @@ def run_smoothing_experiment() -> None:
         print(f"\nTraining Standard ML (eps={eps_mult})...")
 
         model_standard = PricingNet(**network_config)
-        # Create dummy pathwise delta (zeros) for dataset consistency
-        delta_pw_train = torch.zeros_like(delta_lrm_train)
         dataset_standard = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
         config.lambda_delta = 0.0
-        model_standard = train_model(
+        train_model(
             model=model_standard,
             dataset=dataset_standard,
             config=config,
@@ -130,6 +128,8 @@ def run_smoothing_experiment() -> None:
             pred_price_standard, pred_delta_standard, _ = nn_value_delta_gamma(
                 model_standard, x_test, compute_delta=True, compute_gamma=False
             )
+        if pred_delta_standard is None:
+            raise RuntimeError("Expected delta tensor for standard smoothing evaluation.")
 
         price_rmse_standard = rmse(pred_price_standard, price_test_true)
         delta_rmse_standard = rmse(pred_delta_standard, delta_test_true)
@@ -146,7 +146,7 @@ def run_smoothing_experiment() -> None:
         dataset_lrm = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
         config.lambda_delta = 1.0
-        model_lrm = train_model(
+        train_model(
             model=model_lrm,
             dataset=dataset_lrm,
             config=config,
@@ -159,6 +159,8 @@ def run_smoothing_experiment() -> None:
             pred_price_lrm, pred_delta_lrm, _ = nn_value_delta_gamma(
                 model_lrm, x_test, compute_delta=True, compute_gamma=False
             )
+        if pred_delta_lrm is None:
+            raise RuntimeError("Expected delta tensor for LRM smoothing evaluation.")
 
         price_rmse_lrm = rmse(pred_price_lrm, price_test_true)
         delta_rmse_lrm = rmse(pred_delta_lrm, delta_test_true)

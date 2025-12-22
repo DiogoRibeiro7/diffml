@@ -15,13 +15,14 @@ from diffml.simulation import simulate_bs_terminal
 def make_smoothed_digital_dataset(
     m: int,
     K: float,
-    eps: float,
     params: BSParams,
+    eps: float | None = None,
+    eps_multiplier: float | None = 1.0,
     x_min: float = 40.0,
     x_max: float = 160.0,
     n_paths_per_x: int = 10,
     seed: int | None = 1234
-) -> tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for smoothed digital call option with ramp function.
 
     Uses a ramp smoothing function:
@@ -35,10 +36,12 @@ def make_smoothed_digital_dataset(
         Number of spot price points in the dataset.
     K : float
         Strike price of the digital option.
-    eps : float
-        Width of the smoothing ramp.
     params : BSParams
         Black-Scholes parameters (r, sigma, T).
+    eps : float | None
+        Absolute width of the smoothing ramp. If None, computed from eps_multiplier.
+    eps_multiplier : float | None
+        Multiplier for sigma * sqrt(T) * K when eps is not provided.
     x_min : float, optional
         Minimum spot price. Default is 40.0.
     x_max : float, optional
@@ -50,11 +53,12 @@ def make_smoothed_digital_dataset(
 
     Returns
     -------
-    Tuple[Tensor, Tensor, Tensor]
+    Tuple[Tensor, Tensor, Tensor, Tensor]
         A tuple containing:
         - x: Spot prices of shape (m, 1)
         - price_label: Monte Carlo prices of shape (m, 1)
         - delta_pathwise: Pathwise deltas of shape (m, 1)
+        - delta_lrm: LRM deltas of shape (m, 1)
 
     Raises
     ------
@@ -65,7 +69,7 @@ def make_smoothed_digital_dataset(
     Examples
     --------
     >>> params = BSParams(r=0.05, sigma=0.2, T=0.25)
-    >>> x, prices, deltas = make_smoothed_digital_dataset(
+    >>> x, prices, delta_pw, delta_lrm = make_smoothed_digital_dataset(
     ...     m=100, K=100.0, eps=5.0, params=params, n_paths_per_x=10000
     ... )
     >>> x.shape, prices.shape
@@ -80,8 +84,19 @@ def make_smoothed_digital_dataset(
         raise ValueError(f"x_min must be less than x_max, got x_min={x_min}, x_max={x_max}")
     if K <= 0:
         raise ValueError(f"Strike K must be positive, got {K}")
-    if eps <= 0:
-        raise ValueError(f"Smoothing parameter eps must be positive, got {eps}")
+
+    if eps is None:
+        if eps_multiplier is None:
+            raise ValueError("Provide either eps or eps_multiplier.")
+        if eps_multiplier <= 0:
+            raise ValueError(f"eps_multiplier must be positive, got {eps_multiplier}")
+        sqrt_T = torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE))
+        eps_value = float(eps_multiplier * params.sigma * float(sqrt_T) * K)
+    else:
+        eps_value = float(eps)
+
+    if eps_value <= 0:
+        raise ValueError(f"Smoothing parameter eps must be positive, got {eps_value}")
 
     # Get device and set precision
     device = get_device()
@@ -92,18 +107,22 @@ def make_smoothed_digital_dataset(
 
     # Simulate terminal prices
     # ST shape: (m, n_paths_per_x), xi shape: (m, n_paths_per_x)
-    ST, _xi = simulate_bs_terminal(x, params, n_paths_per_x, seed=seed)
+    ST, xi = simulate_bs_terminal(x, params, n_paths_per_x, seed=seed)
 
     # Compute discount factor
-    discount = torch.exp(-params.r * params.T)
+    discount = torch.exp(
+        torch.tensor(-params.r * params.T, dtype=DEFAULT_DTYPE, device=device)
+    )
 
     # Smoothed payoff using ramp function
     # g(ST) = 0 for ST <= K - eps/2
     # g(ST) = 1 for ST >= K + eps/2
     # g(ST) = (ST - (K - eps/2)) / eps for K - eps/2 < ST < K + eps/2
 
-    lower_bound = K - eps / 2
-    upper_bound = K + eps / 2
+    eps_tensor = torch.tensor(eps_value, dtype=DEFAULT_DTYPE, device=device)
+    strike = torch.tensor(K, dtype=DEFAULT_DTYPE, device=device)
+    lower_bound = strike - eps_tensor / 2
+    upper_bound = strike + eps_tensor / 2
 
     # Initialize payoff tensor
     # Shape: (m, n_paths_per_x)
@@ -117,7 +136,7 @@ def make_smoothed_digital_dataset(
 
     # In ramp region: linear interpolation
     in_ramp = (lower_bound < ST) & (upper_bound > ST)
-    payoff[in_ramp] = (ST[in_ramp] - lower_bound) / eps
+    payoff[in_ramp] = (ST[in_ramp] - lower_bound) / eps_tensor
 
     # Discounted payoff
     disc_payoff = discount * payoff
@@ -134,7 +153,7 @@ def make_smoothed_digital_dataset(
     # Derivative of smoothed payoff
     # Shape: (m, n_paths_per_x)
     dg_dST = torch.zeros_like(ST)
-    dg_dST[in_ramp] = 1.0 / eps
+    dg_dST[in_ramp] = 1.0 / eps_tensor
 
     # Chain rule: delta = disc * (dg/dST) * (ST/x)
     # Broadcasting: x is (m, 1), ST is (m, n_paths_per_x)
@@ -144,4 +163,11 @@ def make_smoothed_digital_dataset(
     # Shape: (m, 1)
     delta_pathwise = delta_paths.mean(dim=1, keepdim=True)
 
-    return x, price_label, delta_pathwise
+    # LRM delta using xi from simulation
+    sqrt_T = torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE, device=device))
+    score = xi / (params.sigma * sqrt_T)
+    score = score / x  # Scale by initial spot
+    delta_lrm_paths = disc_payoff * score
+    delta_lrm = delta_lrm_paths.mean(dim=1, keepdim=True)
+
+    return x, price_label, delta_pathwise, delta_lrm

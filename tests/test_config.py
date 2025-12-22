@@ -1,5 +1,6 @@
 """Tests for configuration module."""
 
+import pytest
 import torch
 
 from diffml.config import (
@@ -44,12 +45,13 @@ def test_training_config():
     """Test TrainingConfig initialization."""
     config = TrainingConfig(
         batch_size=128,
-        learning_rate=5e-4,
         n_epochs=200,
     )
 
+    config.learning_rate = 5e-4
     assert config.batch_size == 128
     assert config.learning_rate == 5e-4
+    assert config.lr_initial == 5e-4
     assert config.n_epochs == 200
 
 
@@ -86,12 +88,19 @@ def test_get_device():
     assert isinstance(device, torch.device)
 
     # Test CPU selection
-    device = get_device("cpu")
-    assert device.type == "cpu"
+    cpu_device = get_device("cpu")
+    assert cpu_device.type == "cpu"
 
     # Test CUDA selection (will fall back to CPU if not available)
-    device = get_device("cuda")
-    assert isinstance(device, torch.device)
+    cuda_device = get_device("cuda")
+    if torch.cuda.is_available():
+        assert cuda_device.type == "cuda"
+    else:
+        assert cuda_device.type == "cpu"
+
+    # Unknown preference should raise
+    with pytest.raises(ValueError):
+        get_device("tpu")
 
 
 def test_set_random_seeds():

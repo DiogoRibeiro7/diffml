@@ -92,6 +92,35 @@ def simulate_bs_terminal(
     return ST, xi
 
 
+def simulate_bs_terminal_shared(
+    spots: Tensor,
+    params: BSParams,
+    n_paths: int,
+    seed: int | None = None
+) -> tuple[Tensor, Tensor]:
+    """Simulate terminal prices using shocks shared across the ``spots`` batch."""
+
+    if spots.dim() != 2 or spots.shape[1] != 1:
+        raise ValueError(f"spots must have shape (m, 1), got {spots.shape}")
+    if n_paths <= 0:
+        raise ValueError(f"n_paths must be positive, got {n_paths}")
+    if (spots <= 0).any():
+        raise ValueError("All spot prices must be positive")
+
+    device = get_device()
+    spots = spots.to(device=device, dtype=DEFAULT_DTYPE)
+    if seed is not None:
+        torch.manual_seed(seed)
+
+    xi = torch.randn(n_paths, device=device, dtype=DEFAULT_DTYPE)
+    drift = (params.r - 0.5 * params.sigma ** 2) * params.T
+    diffusion = params.sigma * torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE))
+    xi_expanded = xi.unsqueeze(0)
+    log_ST = torch.log(spots) + drift + diffusion * xi_expanded
+    ST = torch.exp(log_ST)
+    return ST, xi
+
+
 def simulate_bs_two_step(
     spots: Tensor,
     params: BSParams,

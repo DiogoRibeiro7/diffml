@@ -146,6 +146,29 @@ def bs_digital_delta(x: Tensor, K: float, params: BSParams) -> Tensor:
 - Utility functions in appropriate module (e.g., `simulation.py`, `bs_analytics.py`)
 - Always add corresponding tests in `tests/`
 
+## 📝 Documentation & Docstrings
+
+High-quality documentation is part of the review checklist. Follow these steps
+whenever you touch public APIs:
+
+1. **Read the style guide** – `docs/DOCS_STYLE.md` defines the NumPy
+   docstring template, inline comment rules, and the definition of “public API”.
+2. **Keep docstrings accurate** – Every public module/class/function in
+   `src/diffml`, `src/diffml_article_replication`, `scripts/`, and `examples/`
+   needs a complete docstring with `Parameters`, `Returns`, and `Raises`
+   sections where applicable. Start summaries in the imperative mood.
+3. **Explain the “why”** – Inline comments must describe intent/invariants,
+   not restate the obvious code. Prefer `Notes` sections for extended context.
+4. **Update coverage** – When you add or remove public modules, edit
+   `docs/DOC_COVERAGE.md` to reflect the new status and describe what changed in
+   your PR.
+5. **Lint locally** – Run `poetry run ruff check --select D src scripts examples`
+   before opening a PR. CI enforces pydocstyle (D1/D2/D4) everywhere except
+   `tests/`.
+
+If you are unsure whether something counts as public or how to structure a
+docstring, open a draft PR or discussion—maintainers are happy to help.
+
 ## 🐛 Reporting Issues
 
 ### Bug Reports

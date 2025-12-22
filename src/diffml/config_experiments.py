@@ -5,6 +5,7 @@ configurations from TOML files, enabling reproducible and configurable
 experiments.
 """
 
+import importlib
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -106,7 +107,7 @@ class ExperimentConfig:
     # Catch-all for additional parameters
     extra_params: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate configuration after initialization."""
         if self.m_train <= 0:
             raise ValueError(f"m_train must be positive, got {self.m_train}")
@@ -173,13 +174,17 @@ def load_experiment_config(path: str) -> ExperimentConfig:
             raise ValueError(f"Missing required field in [experiment]: {required_field}")
 
     # Create TrainingConfig
+    default_training = TrainingConfig()
     training_config = TrainingConfig(
-        n_epochs=training_data.get("n_epochs", 2000),
-        batch_size=training_data.get("batch_size", 256),
-        lr_initial=training_data.get("lr_initial", 1e-3),
-        lr_min=training_data.get("lr_min", 1e-6),
-        lambda_delta=training_data.get("lambda_delta", 1.0),
-        lambda_gamma=training_data.get("lambda_gamma", 0.0),
+        n_epochs=training_data.get("n_epochs", default_training.n_epochs),
+        batch_size=training_data.get("batch_size", default_training.batch_size),
+        lr_initial=training_data.get("lr_initial", default_training.lr_initial),
+        lr_min=training_data.get("lr_min", default_training.lr_min),
+        lambda_delta=training_data.get("lambda_delta", default_training.lambda_delta),
+        lambda_gamma=training_data.get("lambda_gamma", default_training.lambda_gamma),
+        use_mixed_precision=training_data.get(
+            "use_mixed_precision", default_training.use_mixed_precision
+        ),
     )
 
     # Build ExperimentConfig
@@ -207,8 +212,11 @@ def load_experiment_config(path: str) -> ExperimentConfig:
         sigma=bs_params_data.get("sigma", 0.2),
         T=bs_params_data.get("T", 0.25),
         # Store any extra parameters
-        extra_params={k: v for k, v in toml_data.items()
-                     if k not in ["experiment", "training", "dataset", "payoff", "black_scholes"]}
+        extra_params={
+            k: v
+            for k, v in toml_data.items()
+            if k not in ["experiment", "training", "dataset", "payoff", "black_scholes"]
+        }
     )
 
     return config
@@ -230,7 +238,7 @@ def save_experiment_config(config: ExperimentConfig, path: str) -> None:
     Install with: pip install toml
     """
     try:
-        import toml
+        toml_module = importlib.import_module("toml")
     except ImportError as exc:
         raise ImportError(
             "Saving TOML files requires 'toml' package. "
@@ -246,9 +254,10 @@ def save_experiment_config(config: ExperimentConfig, path: str) -> None:
             "n_epochs": config.training.n_epochs,
             "batch_size": config.training.batch_size,
             "lr_initial": config.training.lr_initial,
-            "lr_final": config.training.lr_final,
+            "lr_min": config.training.lr_min,
             "lambda_delta": config.training.lambda_delta,
             "lambda_gamma": config.training.lambda_gamma,
+            "use_mixed_precision": config.training.use_mixed_precision,
         },
         "dataset": {
             "m_train": config.m_train,
@@ -266,7 +275,7 @@ def save_experiment_config(config: ExperimentConfig, path: str) -> None:
     }
 
     # Add payoff parameters if they exist
-    payoff_dict = {}
+    payoff_dict: dict[str, Any] = {}
     if config.K is not None:
         payoff_dict["K"] = config.K
     if config.B is not None:
@@ -280,7 +289,7 @@ def save_experiment_config(config: ExperimentConfig, path: str) -> None:
     if config.n_steps is not None:
         payoff_dict["n_steps"] = config.n_steps
     if config.eps_multipliers is not None:
-        payoff_dict["eps_multipliers"] = config.eps_multipliers
+        payoff_dict["eps_multipliers"] = list(config.eps_multipliers)
 
     if payoff_dict:
         config_dict["payoff"] = payoff_dict
@@ -293,4 +302,4 @@ def save_experiment_config(config: ExperimentConfig, path: str) -> None:
     config_path.parent.mkdir(parents=True, exist_ok=True)
 
     with config_path.open("w") as f:
-        toml.dump(config_dict, f)
+        toml_module.dump(config_dict, f)

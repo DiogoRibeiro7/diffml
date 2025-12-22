@@ -14,7 +14,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from diffml.run_experiment import (
+from diffml_article_replication.run_experiment import (
     list_available_experiments,
     run_experiment_from_config,
     validate_config,

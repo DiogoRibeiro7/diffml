@@ -78,7 +78,7 @@ from diffml.datasets_smoothing import make_smoothed_digital_dataset
 
 # Experiment runners
 from diffml.experiments_barrier import run_barrier_experiment
-from diffml.experiments_basket import run_basket_digital_experiment
+from diffml.experiments_basket import run_basket_digital_experiment, run_basket_high_dim_experiment
 from diffml.experiments_digital import run_digital_experiment
 from diffml.experiments_gamma import run_gamma_experiment
 from diffml.experiments_smoothing import run_smoothing_experiment
@@ -99,6 +99,7 @@ from diffml.simulation import (
     build_time_grid,
     simulate_bs_paths,
     simulate_bs_terminal,
+    simulate_bs_terminal_shared,
     simulate_bs_two_step,
 )
 
@@ -130,6 +131,7 @@ __all__ = [
     "build_time_grid",
     "simulate_bs_paths",
     "simulate_bs_terminal",
+    "simulate_bs_terminal_shared",
     "simulate_bs_two_step",
     # Losses
     "AdaptiveDifferentialLoss",
@@ -154,6 +156,7 @@ __all__ = [
     # Experiment runners
     "run_barrier_experiment",
     "run_basket_digital_experiment",
+    "run_basket_high_dim_experiment",
     "run_digital_experiment",
     "run_gamma_experiment",
     "run_smoothing_experiment",

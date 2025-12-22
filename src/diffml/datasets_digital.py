@@ -5,12 +5,16 @@ for digital option pricing using differential machine learning.
 """
 
 
+from typing import Any
+
 import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from diffml.config import DEFAULT_DTYPE, BSParams, get_device
-from diffml.simulation import simulate_bs_terminal
+from diffml.simulation import simulate_bs_terminal, simulate_bs_terminal_shared
+
+DigitalSample = tuple[Tensor, Tensor, Tensor, Tensor]
 
 
 def make_digital_dataset(
@@ -20,7 +24,8 @@ def make_digital_dataset(
     x_min: float = 40.0,
     x_max: float = 160.0,
     n_paths_per_x: int = 10,
-    seed: int | None = 1234
+    seed: int | None = 1234,
+    use_shared_paths: bool = False,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Generate dataset for 1D digital call option under Black-Scholes.
 
@@ -91,12 +96,16 @@ def make_digital_dataset(
     # Shape: (m, 1)
     x = torch.linspace(x_min, x_max, m, device=device, dtype=DEFAULT_DTYPE).reshape(m, 1)
 
-    # Simulate terminal prices
-    # ST shape: (m, n_paths_per_x), xi shape: (m, n_paths_per_x)
-    ST, xi = simulate_bs_terminal(x, params, n_paths_per_x, seed=seed)
+    if use_shared_paths:
+        ST, xi_shared = simulate_bs_terminal_shared(x, params, n_paths_per_x, seed=seed)
+        xi = xi_shared.unsqueeze(0).expand_as(ST)
+    else:
+        ST, xi = simulate_bs_terminal(x, params, n_paths_per_x, seed=seed)
 
     # Compute discount factor
-    discount = torch.exp(-params.r * params.T)
+    discount = torch.exp(
+        torch.tensor(-params.r * params.T, dtype=DEFAULT_DTYPE, device=device)
+    )
 
     # Digital payoff: 1_{ST > K}
     # Shape: (m, n_paths_per_x)
@@ -116,7 +125,7 @@ def make_digital_dataset(
     # Likelihood Ratio Method (LRM) delta
     # Score function: xi / (S0 * sigma * sqrt(T))
     # LRM estimator: E[payoff * score]
-    sqrt_T = torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE))
+    sqrt_T = torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE, device=device))
     score = xi / (x * params.sigma * sqrt_T)  # Broadcasting: x is (m, 1), xi is (m, n_paths)
 
     # LRM delta: mean of discounted payoff times score
@@ -126,7 +135,7 @@ def make_digital_dataset(
     return x, price_label, delta_pathwise, delta_lrm
 
 
-class DigitalOptionDataset(Dataset):
+class DigitalOptionDataset(Dataset[DigitalSample]):
     """PyTorch Dataset for digital option pricing.
 
     Parameters
@@ -165,7 +174,7 @@ class DigitalOptionDataset(Dataset):
         """
         return self.n_samples
 
-    def __getitem__(self, idx: int) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+    def __getitem__(self, idx: int) -> DigitalSample:
         """Get a sample from the dataset.
 
         Parameters
@@ -193,8 +202,8 @@ def create_digital_dataloaders(
     K: float = 100.0,
     params: BSParams | None = None,
     n_paths_per_x: int = 10000,
-    **kwargs,
-) -> tuple[DataLoader, DataLoader]:
+    **kwargs: Any,
+) -> tuple[DataLoader[DigitalSample], DataLoader[DigitalSample]]:
     """Create training and validation dataloaders for digital options.
 
     Parameters
@@ -251,14 +260,14 @@ def create_digital_dataloaders(
     )
 
     # Create dataloaders
-    train_loader = DataLoader(
+    train_loader: DataLoader[DigitalSample] = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=0,
     )
 
-    val_loader = DataLoader(
+    val_loader: DataLoader[DigitalSample] = DataLoader(
         val_dataset,
         batch_size=batch_size,
         shuffle=False,

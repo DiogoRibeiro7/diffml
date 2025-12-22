@@ -4,6 +4,7 @@ This module tests the training loop functionality, ensuring models
 can be trained without errors and show learning progress.
 """
 
+from typing import cast
 
 import pytest
 import torch
@@ -19,6 +20,7 @@ from diffml.datasets_digital import make_digital_dataset
 from diffml.losses import dml_loss
 from diffml.networks import PricingNet
 from diffml.training import (
+    Mode,
     nn_value_delta_gamma,
     rmse,
     train_model,
@@ -59,7 +61,7 @@ def tiny_dataset() -> tuple[TensorDataset, torch.Tensor, torch.Tensor]:
     dataset = TensorDataset(x, price, delta_pw, delta_lrm)
 
     # Also return test data for evaluation
-    x_test, price_test, _, _delta_test = make_digital_dataset(
+    x_test, price_test, _, _ = make_digital_dataset(
         m=8,
         K=100.0,
         params=params,
@@ -156,6 +158,7 @@ class TestValueDeltaGamma:
 
         # Check shapes
         assert value.shape == x.shape
+        assert delta is not None
         assert delta.shape == x.shape
         assert gamma is None
 
@@ -175,6 +178,8 @@ class TestValueDeltaGamma:
 
         # Check shapes
         assert value.shape == x.shape
+        assert delta is not None
+        assert gamma is not None
         assert delta.shape == x.shape
         assert gamma.shape == x.shape
 
@@ -197,6 +202,7 @@ class TestValueDeltaGamma:
 
         # Check shapes
         assert value.shape == (batch_size, 1)
+        assert delta is not None
         assert delta.shape == (batch_size, d)  # Gradient w.r.t. each input
         assert gamma is None
 
@@ -347,7 +353,7 @@ class TestTrainingLoop:
         device: torch.device
     ) -> None:
         """Test training with delta LRM mode."""
-        dataset, x_test, _price_test = tiny_dataset
+        dataset, x_test, _ = tiny_dataset
 
         # Create model
         model = PricingNet(input_dim=1, hidden_dim=10, n_hidden=2)
@@ -379,6 +385,7 @@ class TestTrainingLoop:
             )
 
         assert torch.all(torch.isfinite(pred_price))
+        assert pred_delta is not None
         assert torch.all(torch.isfinite(pred_delta))
 
     def test_train_delta_pathwise_mode(
@@ -417,6 +424,7 @@ class TestTrainingLoop:
             )
 
         assert torch.all(torch.isfinite(pred_price))
+        assert pred_delta is not None
         assert torch.all(torch.isfinite(pred_delta))
 
     def test_train_gamma_mode(
@@ -431,8 +439,16 @@ class TestTrainingLoop:
         delta = torch.randn(m, 1, dtype=torch.float64) * 0.1
         gamma = torch.randn(m, 1, dtype=torch.float64) * 0.01
 
-        # Need 5 elements for gamma mode
-        dataset = TensorDataset(x, price, delta, delta, gamma)
+        # Gamma mode expects 7-tensor batches matching gamma portfolio format
+        dataset = TensorDataset(
+            x,           # features
+            price,       # true price
+            delta,       # analytical delta (used as delta_lrm stand-in)
+            gamma,       # analytical gamma (unused placeholder)
+            price,       # Monte Carlo price placeholder
+            delta,       # pathwise delta placeholder
+            gamma        # gamma PWLR labels
+        )
 
         model = PricingNet(input_dim=1, hidden_dim=10, n_hidden=2)
 
@@ -464,6 +480,8 @@ class TestTrainingLoop:
         )
 
         assert torch.all(torch.isfinite(pred_price))
+        assert pred_delta is not None
+        assert pred_gamma is not None
         assert torch.all(torch.isfinite(pred_delta))
         assert torch.all(torch.isfinite(pred_gamma))
 
@@ -521,20 +539,20 @@ class TestTrainingLoop:
         # Perfect predictions
         pred = torch.tensor([[1.0], [2.0], [3.0]], dtype=torch.float64)
         true = torch.tensor([[1.0], [2.0], [3.0]], dtype=torch.float64)
-        assert rmse(pred, true).item() < 1e-10
+        assert rmse(pred, true) < 1e-10
 
         # Known RMSE
         pred = torch.tensor([[1.0], [2.0], [3.0]], dtype=torch.float64)
         true = torch.tensor([[2.0], [3.0], [4.0]], dtype=torch.float64)
         expected_rmse = 1.0  # All errors are 1
-        assert abs(rmse(pred, true).item() - expected_rmse) < 1e-10
+        assert abs(rmse(pred, true) - expected_rmse) < 1e-10
 
         # Multi-dimensional
         pred = torch.randn(10, 5, dtype=torch.float64)
         true = torch.randn(10, 5, dtype=torch.float64)
         error = rmse(pred, true)
-        assert error.ndim == 0  # Scalar
-        assert error.item() >= 0
+        assert isinstance(error, float)
+        assert error >= 0
 
 
 class TestTrainingModes:
@@ -557,7 +575,7 @@ class TestTrainingModes:
             lambda_gamma=0.5
         )
 
-        modes = ["standard", "delta_pathwise", "delta_lrm"]
+        modes: tuple[Mode, ...] = ("standard", "delta_pathwise", "delta_lrm")
 
         for mode in modes:
             model = PricingNet(input_dim=1, hidden_dim=10, n_hidden=2)
@@ -589,7 +607,7 @@ class TestTrainingModes:
                 model=model,
                 dataset=dataset,
                 config=config,
-                mode="invalid_mode",
+                mode=cast(Mode, "invalid_mode"),
                 device=device
             )
 

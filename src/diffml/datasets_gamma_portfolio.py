@@ -134,11 +134,15 @@ def make_portfolio_gamma_dataset(
     portfolio_payoff = torch.zeros_like(ST)
 
     for K_i, w_i in zip(strikes, weights, strict=False):
-        call_payoff_i = torch.maximum(ST - K_i, torch.tensor(0.0, dtype=DEFAULT_DTYPE))
+        call_payoff_i = torch.maximum(
+            ST - K_i, torch.tensor(0.0, dtype=DEFAULT_DTYPE, device=device)
+        )
         portfolio_payoff += w_i * call_payoff_i
 
     # Discount factor
-    discount = torch.exp(-params.r * params.T)
+    discount = torch.exp(
+        torch.tensor(-params.r * params.T, dtype=DEFAULT_DTYPE, device=device)
+    )
     disc_payoff = discount * portfolio_payoff
 
     # Monte Carlo price
@@ -164,7 +168,7 @@ def make_portfolio_gamma_dataset(
     # For a single call: gamma = disc * 1_{ST > K} * (ST / S0^2) * (xi / (sigma * sqrt(T)) - 1)
     # Portfolio gamma: sum of weighted call gammas
     # Shape: (m, n_paths_per_x)
-    sqrt_T = torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE))
+    sqrt_T = torch.sqrt(torch.tensor(params.T, dtype=DEFAULT_DTYPE, device=device))
     gamma_paths = torch.zeros_like(ST)
 
     for K_i, w_i in zip(strikes, weights, strict=False):

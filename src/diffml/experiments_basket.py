@@ -6,6 +6,7 @@ demonstrating differential ML with Bachelier model on high-dimensional inputs.
 
 
 import torch
+from time import perf_counter
 from torch.utils.data import TensorDataset
 
 from diffml.config import TrainingConfig, get_device, set_default_dtype
@@ -125,7 +126,7 @@ def run_basket_digital_experiment() -> None:
     dataset_standard = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
     config.lambda_delta = 0.0
-    model_standard = train_model(
+    train_model(
         model=model_standard,
         dataset=dataset_standard,
         config=config,
@@ -138,6 +139,8 @@ def run_basket_digital_experiment() -> None:
         pred_price_standard, pred_delta_standard, _ = nn_value_delta_gamma(
             model_standard, x_test, compute_delta=True, compute_gamma=False
         )
+    if pred_delta_standard is None:
+        raise RuntimeError("Expected delta tensor for standard basket evaluation.")
 
     price_rmse_standard = rmse(pred_price_standard, price_test_true)
     # For multi-dimensional delta, compute RMSE over all components
@@ -157,7 +160,7 @@ def run_basket_digital_experiment() -> None:
     dataset_pathwise = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
     config.lambda_delta = 1.0
-    model_pathwise = train_model(
+    train_model(
         model=model_pathwise,
         dataset=dataset_pathwise,
         config=config,
@@ -170,6 +173,8 @@ def run_basket_digital_experiment() -> None:
         pred_price_pathwise, pred_delta_pathwise, _ = nn_value_delta_gamma(
             model_pathwise, x_test, compute_delta=True, compute_gamma=False
         )
+    if pred_delta_pathwise is None:
+        raise RuntimeError("Expected delta tensor for pathwise basket evaluation.")
 
     price_rmse_pathwise = rmse(pred_price_pathwise, price_test_true)
     delta_rmse_pathwise = rmse(pred_delta_pathwise, delta_test_true)
@@ -188,7 +193,7 @@ def run_basket_digital_experiment() -> None:
     dataset_lrm = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
     config.lambda_delta = 1.0
-    model_lrm = train_model(
+    train_model(
         model=model_lrm,
         dataset=dataset_lrm,
         config=config,
@@ -201,6 +206,8 @@ def run_basket_digital_experiment() -> None:
         pred_price_lrm, pred_delta_lrm, _ = nn_value_delta_gamma(
             model_lrm, x_test, compute_delta=True, compute_gamma=False
         )
+    if pred_delta_lrm is None:
+        raise RuntimeError("Expected delta tensor for LRM basket evaluation.")
 
     price_rmse_lrm = rmse(pred_price_lrm, price_test_true)
     delta_rmse_lrm = rmse(pred_delta_lrm, delta_test_true)
@@ -226,6 +233,100 @@ def run_basket_digital_experiment() -> None:
     print("- LRM DML provides better delta estimates for discontinuous payoffs")
     print("- Higher dimensions (d=20) require larger networks and more training")
     print("=" * 80)
+
+
+def run_basket_high_dim_experiment(
+    dims: list[int] | None = None,
+    training_config: TrainingConfig | None = None,
+    m_train: int = 1024,
+    m_test: int = 256,
+    n_paths_train: int = 10,
+    n_paths_test: int = 1000,
+) -> None:
+    """
+    Run basket digital experiments for multiple dimensions and report runtime and RMSE.
+    """
+
+    dimensions = dims or [20, 50, 100]
+    if not dimensions:
+        raise ValueError("dims must contain at least one dimension")
+
+    set_default_dtype()
+    device = get_device()
+    base_config = training_config or TrainingConfig(
+        n_epochs=800,
+        batch_size=256,
+        lr_initial=5e-4,
+        lr_min=1e-6,
+        lambda_delta=1.0,
+    )
+
+    header = "\nHigh-dimensional basket digital stress test"
+    print(header)
+    print("dimension | train_time (s) | price_RMSE | delta_RMSE")
+    print("-" * 60)
+
+    for d in dimensions:
+        torch.manual_seed(1234 + d)
+        train_seed = 2000 + d
+        test_seed = 3000 + d
+
+        x_train, price_train, delta_pw_train, delta_lrm_train = make_basket_digital_dataset(
+            m=m_train,
+            d=d,
+            K=1.0,
+            sigma=0.2,
+            T=1.0 / 3.0,
+            x_min=0.5,
+            x_max=1.5,
+            n_paths_per_x=n_paths_train,
+            seed=train_seed,
+        )
+
+        delta_pw_scalar = delta_pw_train.mean(dim=1, keepdim=True)
+        delta_lrm_scalar = delta_lrm_train.mean(dim=1, keepdim=True)
+        dataset = TensorDataset(x_train, price_train, delta_pw_scalar, delta_lrm_scalar)
+        model = PricingNet(input_dim=d, hidden_dim=40, n_hidden=4)
+
+        start = perf_counter()
+        train_model(
+            model=model,
+            dataset=dataset,
+            config=base_config,
+            mode="delta_lrm",
+            device=device,
+        )
+        elapsed = perf_counter() - start
+
+        x_test, price_test_true, _, delta_test_true = make_basket_digital_dataset(
+            m=m_test,
+            d=d,
+            K=1.0,
+            sigma=0.2,
+            T=1.0 / 3.0,
+            x_min=0.5,
+            x_max=1.5,
+            n_paths_per_x=n_paths_test,
+            seed=test_seed,
+        )
+
+        with torch.no_grad():
+            pred_price, pred_delta, _ = nn_value_delta_gamma(
+                model,
+                x_test,
+                compute_delta=True,
+                compute_gamma=False,
+            )
+
+        if pred_delta is None:
+            raise RuntimeError("Expected delta predictions for basket stress experiment")
+
+        price_rmse_value = rmse(pred_price.cpu(), price_test_true.cpu())
+        delta_rmse_value = rmse(pred_delta.cpu(), delta_test_true.cpu())
+
+        print(
+            f"{d:9d} | {elapsed:13.2f} | {price_rmse_value:10.4f} | {delta_rmse_value:10.4f}"
+        )
 
 
 if __name__ == "__main__":

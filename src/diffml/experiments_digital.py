@@ -106,7 +106,7 @@ def run_digital_experiment() -> None:
     dataset_standard = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
     config.lambda_delta = 0.0
-    model_standard = train_model(
+    train_model(
         model=model_standard,
         dataset=dataset_standard,
         config=config,
@@ -119,6 +119,8 @@ def run_digital_experiment() -> None:
         pred_price_standard, pred_delta_standard, _ = nn_value_delta_gamma(
             model_standard, x_test, compute_delta=True, compute_gamma=False
         )
+    if pred_delta_standard is None:
+        raise RuntimeError("Expected delta tensor for standard model evaluation.")
 
     price_rmse_standard = rmse(pred_price_standard, price_test_true)
     delta_rmse_standard = rmse(pred_delta_standard, delta_test_true)
@@ -137,7 +139,7 @@ def run_digital_experiment() -> None:
     dataset_pathwise = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
     config.lambda_delta = 1.0
-    model_pathwise = train_model(
+    train_model(
         model=model_pathwise,
         dataset=dataset_pathwise,
         config=config,
@@ -150,6 +152,8 @@ def run_digital_experiment() -> None:
         pred_price_pathwise, pred_delta_pathwise, _ = nn_value_delta_gamma(
             model_pathwise, x_test, compute_delta=True, compute_gamma=False
         )
+    if pred_delta_pathwise is None:
+        raise RuntimeError("Expected delta tensor for pathwise model evaluation.")
 
     price_rmse_pathwise = rmse(pred_price_pathwise, price_test_true)
     delta_rmse_pathwise = rmse(pred_delta_pathwise, delta_test_true)
@@ -168,7 +172,7 @@ def run_digital_experiment() -> None:
     dataset_lrm = TensorDataset(x_train, price_train, delta_pw_train, delta_lrm_train)
 
     config.lambda_delta = 1.0
-    model_lrm = train_model(
+    train_model(
         model=model_lrm,
         dataset=dataset_lrm,
         config=config,
@@ -181,6 +185,8 @@ def run_digital_experiment() -> None:
         pred_price_lrm, pred_delta_lrm, _ = nn_value_delta_gamma(
             model_lrm, x_test, compute_delta=True, compute_gamma=False
         )
+    if pred_delta_lrm is None:
+        raise RuntimeError("Expected delta tensor for LRM model evaluation.")
 
     price_rmse_lrm = rmse(pred_price_lrm, price_test_true)
     delta_rmse_lrm = rmse(pred_delta_lrm, delta_test_true)

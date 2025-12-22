@@ -4,12 +4,16 @@ This module provides functions to generate training and validation datasets
 for barrier option pricing using differential machine learning.
 """
 
+from typing import Any
+
 import torch
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from diffml.config import DEFAULT_DTYPE, BSParams, get_device
 from diffml.simulation import simulate_bs_two_step
+
+BarrierSample = tuple[Tensor, Tensor, Tensor, Tensor]
 
 
 def make_barrier_dataset(
@@ -108,7 +112,9 @@ def make_barrier_dataset(
     S1, S2, xi1, _xi2 = simulate_bs_two_step(x, params, T1, T2, n_paths_per_x, seed=seed)
 
     # Compute discount factor for maturity T2
-    discount = torch.exp(-params.r * T2)
+    discount = torch.exp(
+        torch.tensor(-params.r * T2, dtype=DEFAULT_DTYPE, device=device)
+    )
 
     # Barrier indicator: option survives if S1 > B
     # Shape: (m, n_paths_per_x)
@@ -116,7 +122,9 @@ def make_barrier_dataset(
 
     # Call payoff at T2: max(S2 - K, 0)
     # Shape: (m, n_paths_per_x)
-    call_payoff = torch.maximum(S2 - K, torch.tensor(0.0, dtype=DEFAULT_DTYPE))
+    call_payoff = torch.maximum(
+        S2 - K, torch.tensor(0.0, dtype=DEFAULT_DTYPE, device=device)
+    )
 
     # Down-and-out call payoff
     # Shape: (m, n_paths_per_x)
@@ -155,7 +163,7 @@ def make_barrier_dataset(
     return x, price_label, delta_pathwise, delta_lrm
 
 
-class BarrierOptionDataset(Dataset):
+class BarrierOptionDataset(Dataset[BarrierSample]):
     """PyTorch Dataset for barrier option pricing.
 
     Parameters
@@ -194,7 +202,7 @@ class BarrierOptionDataset(Dataset):
         """
         return self.n_samples
 
-    def __getitem__(self, idx: int) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+    def __getitem__(self, idx: int) -> BarrierSample:
         """Get a sample from the dataset.
 
         Parameters
@@ -225,8 +233,8 @@ def create_barrier_dataloaders(
     T2: float = 0.5,
     params: BSParams | None = None,
     n_paths_per_x: int = 10000,
-    **kwargs,
-) -> tuple[DataLoader, DataLoader]:
+    **kwargs: Any,
+) -> tuple[DataLoader[BarrierSample], DataLoader[BarrierSample]]:
     """Create training and validation dataloaders for barrier options.
 
     Parameters
@@ -295,14 +303,14 @@ def create_barrier_dataloaders(
     )
 
     # Create dataloaders
-    train_loader = DataLoader(
+    train_loader: DataLoader[BarrierSample] = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=0,
     )
 
-    val_loader = DataLoader(
+    val_loader: DataLoader[BarrierSample] = DataLoader(
         val_dataset,
         batch_size=batch_size,
         shuffle=False,

@@ -5,6 +5,8 @@ with differential machine learning, including weighted sensitivity losses.
 """
 
 
+from typing import cast
+
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -98,7 +100,7 @@ def dml_loss(
 
     # Base loss: MSE on prices
     mse_loss = nn.MSELoss()
-    loss = mse_loss(pred_price, true_price)
+    loss: Tensor = mse_loss(pred_price, true_price)
 
     # Add delta regularization if requested
     if lambda_delta > 0:
@@ -113,6 +115,8 @@ def dml_loss(
             )
 
         if has_vector_delta:
+            if pred_delta_vector is None or true_delta_vector is None:
+                raise ValueError("Vector delta inputs must be provided when lambda_delta > 0.")
             # Vector delta case (multi-dimensional input)
             if pred_delta_vector.shape != true_delta_vector.shape:
                 raise ValueError(
@@ -124,6 +128,8 @@ def dml_loss(
             loss = loss + lambda_delta * delta_loss
 
         elif has_scalar_delta:
+            if pred_delta_scalar is None or true_delta_scalar is None:
+                raise ValueError("Scalar delta inputs must be provided when lambda_delta > 0.")
             # Scalar delta case (1D input or averaged multi-dim)
             if pred_delta_scalar.shape != true_delta_scalar.shape:
                 raise ValueError(
@@ -218,13 +224,13 @@ class DifferentialLoss(nn.Module):
             Total loss value.
         """
         # Value loss
-        value_loss = self.value_loss_fn(pred_values, true_values)
+        value_loss = cast(Tensor, self.value_loss_fn(pred_values, true_values))
         total_loss = self.value_weight * value_loss
 
         # Sensitivity loss (if provided)
         if pred_sensitivities is not None and true_sensitivities is not None:
-            sensitivity_loss = self.sensitivity_loss_fn(
-                pred_sensitivities, true_sensitivities
+            sensitivity_loss = cast(
+                Tensor, self.sensitivity_loss_fn(pred_sensitivities, true_sensitivities)
             )
             total_loss += self.sensitivity_weight * sensitivity_loss
 
@@ -295,11 +301,11 @@ class AdaptiveDifferentialLoss(nn.Module):
             Total loss value.
         """
         # Compute individual losses
-        value_loss = self.value_loss_fn(pred_values, true_values)
+        value_loss = cast(Tensor, self.value_loss_fn(pred_values, true_values))
 
         if pred_sensitivities is not None and true_sensitivities is not None:
-            sensitivity_loss = self.sensitivity_loss_fn(
-                pred_sensitivities, true_sensitivities
+            sensitivity_loss = cast(
+                Tensor, self.sensitivity_loss_fn(pred_sensitivities, true_sensitivities)
             )
 
             # Update running means
@@ -380,12 +386,12 @@ class HuberDifferentialLoss(nn.Module):
         torch.Tensor
             Total loss value.
         """
-        value_loss = self.value_loss_fn(pred_values, true_values)
+        value_loss = cast(Tensor, self.value_loss_fn(pred_values, true_values))
         total_loss = self.value_weight * value_loss
 
         if pred_sensitivities is not None and true_sensitivities is not None:
-            sensitivity_loss = self.sensitivity_loss_fn(
-                pred_sensitivities, true_sensitivities
+            sensitivity_loss = cast(
+                Tensor, self.sensitivity_loss_fn(pred_sensitivities, true_sensitivities)
             )
             total_loss += self.sensitivity_weight * sensitivity_loss
 

@@ -16,7 +16,7 @@ EXPERIMENT_REGISTRY: dict[str, ExperimentFunc] = {}
 
 
 def register_experiment(name: str) -> Callable[[ExperimentFunc], ExperimentFunc]:
-    """Decorator to register an experiment function.
+    """Register an experiment function.
 
     This decorator registers a function in the global experiment registry,
     making it accessible by name for configuration-based execution.

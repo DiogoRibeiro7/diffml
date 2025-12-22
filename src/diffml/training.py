@@ -4,7 +4,8 @@ This module provides training loops, callbacks, and utilities for training
 neural networks with differential machine learning.
 """
 
-from typing import Any, Literal
+import contextlib
+from typing import Any, Iterator, Literal, TypeAlias, cast
 
 import torch
 import torch.nn as nn
@@ -16,8 +17,20 @@ from tqdm import tqdm
 from diffml.config import TrainingConfig, get_device
 from diffml.losses import dml_loss
 
-# Type alias for training modes
+# Type alias for training modes and batches returned by torch DataLoaders
 Mode = Literal["standard", "delta_pathwise", "delta_lrm", "gamma_pwlr"]
+Batch: TypeAlias = tuple[Tensor, ...]
+
+
+@contextlib.contextmanager
+def maybe_mixed_precision(device: torch.device) -> Iterator[None]:
+    """Enable CUDA autocast when running on GPU, otherwise act as a no-op."""
+
+    if device.type == "cuda":
+        with torch.autocast(device_type="cuda", dtype=torch.float16):
+            yield
+    else:
+        yield
 
 
 def nn_value_delta_gamma(
@@ -78,57 +91,49 @@ def nn_value_delta_gamma(
         )
 
     # Initialize outputs
-    delta = None
-    gamma = None
+    delta: Tensor | None = None
+    gamma: Tensor | None = None
 
-    # Ensure input requires gradients for derivative computation
-    if compute_delta or compute_gamma:
-        x = x.requires_grad_(True)
+    grad_enabled_initial = torch.is_grad_enabled()
+    grad_context = torch.enable_grad() if not grad_enabled_initial else contextlib.nullcontext()
 
-    # Forward pass through the model
-    value = model(x)
+    with grad_context:
+        if compute_delta or compute_gamma:
+            x = x.requires_grad_(True)
+
+        value = model(x)
 
     # Compute delta (first derivative) if requested
-    if compute_delta:
-        # Compute gradient of output with respect to input
-        # grad_outputs is ones to sum over batch dimension
-        grad_outputs = torch.ones_like(value)
-
-        # Create graph is True if we need gamma later
-        delta = torch.autograd.grad(
-            outputs=value,
-            inputs=x,
-            grad_outputs=grad_outputs,
-            create_graph=compute_gamma,  # Keep graph for second derivative
-            retain_graph=compute_gamma,
-        )[0]
-
-    # Compute gamma (second derivative) if requested
-    if compute_gamma:
-        # For 1D input, gamma is the second derivative d²V/dx²
-        # We need to compute the derivative of delta with respect to x
-        if delta is None:
-            # If delta wasn't computed, compute it now
+        if compute_delta:
             grad_outputs = torch.ones_like(value)
+            need_graph = compute_gamma or grad_enabled_initial
             delta = torch.autograd.grad(
                 outputs=value,
                 inputs=x,
                 grad_outputs=grad_outputs,
-                create_graph=True,
-                retain_graph=True,
+                create_graph=need_graph,
+                retain_graph=need_graph,
             )[0]
 
-        # Compute second derivative
-        # Since we have 1D input, delta has shape (batch_size, 1)
-        # We compute d(delta)/dx to get gamma
-        grad_outputs_2 = torch.ones_like(delta)
-        gamma = torch.autograd.grad(
-            outputs=delta,
-            inputs=x,
-            grad_outputs=grad_outputs_2,
-            create_graph=False,  # No need for third derivatives
-            retain_graph=False,
-        )[0]
+        if compute_gamma:
+            if delta is None:
+                grad_outputs = torch.ones_like(value)
+                delta = torch.autograd.grad(
+                    outputs=value,
+                    inputs=x,
+                    grad_outputs=grad_outputs,
+                    create_graph=True,
+                    retain_graph=True,
+                )[0]
+
+            grad_outputs_2 = torch.ones_like(delta)
+            gamma = torch.autograd.grad(
+                outputs=delta,
+                inputs=x,
+                grad_outputs=grad_outputs_2,
+                create_graph=False,
+                retain_graph=True,
+            )[0]
 
     return value, delta, gamma
 
@@ -157,7 +162,7 @@ class EarlyStopping:
         self.min_delta = min_delta
         self.mode = mode
         self.counter = 0
-        self.best_score = None
+        self.best_score: float | None = None
         self.early_stop = False
 
     def __call__(self, metric: float) -> bool:
@@ -198,10 +203,11 @@ class EarlyStopping:
         bool
             True if metric improved.
         """
+        if self.best_score is None:
+            return False
         if self.mode == "min":
             return metric < self.best_score - self.min_delta
-        else:
-            return metric > self.best_score + self.min_delta
+        return metric > self.best_score + self.min_delta
 
 
 class Trainer:
@@ -245,7 +251,7 @@ class Trainer:
 
     def train_epoch(
         self,
-        train_loader: DataLoader,
+        train_loader: DataLoader[Batch],
         epoch: int,
         verbose: bool = True,
     ) -> float:
@@ -303,7 +309,7 @@ class Trainer:
 
     def validate(
         self,
-        val_loader: DataLoader,
+        val_loader: DataLoader[Batch],
         verbose: bool = True,
     ) -> float:
         """Validate the model.
@@ -344,8 +350,8 @@ class Trainer:
 
     def train(
         self,
-        train_loader: DataLoader,
-        val_loader: DataLoader | None = None,
+        train_loader: DataLoader[Batch],
+        val_loader: DataLoader[Batch] | None = None,
         n_epochs: int = 100,
         verbose: bool = True,
     ) -> dict[str, list[float]]:
@@ -403,7 +409,7 @@ def create_optimizer(
     optimizer_name: str = "adam",
     learning_rate: float = 1e-3,
     weight_decay: float = 0.0,
-    **kwargs,
+    **kwargs: Any,
 ) -> optim.Optimizer:
     """Create an optimizer.
 
@@ -434,19 +440,20 @@ def create_optimizer(
 
     optimizer_class = optimizers.get(optimizer_name.lower(), optim.Adam)
 
-    return optimizer_class(
+    optimizer: optim.Optimizer = optimizer_class(
         model.parameters(),
         lr=learning_rate,
         weight_decay=weight_decay,
         **kwargs,
     )
+    return optimizer
 
 
 def create_scheduler(
     optimizer: optim.Optimizer,
     scheduler_name: str,
-    **kwargs,
-) -> Any | None:
+    **kwargs: Any,
+) -> optim.lr_scheduler.LRScheduler | optim.lr_scheduler.ReduceLROnPlateau | None:
     """Create a learning rate scheduler.
 
     Parameters
@@ -475,7 +482,11 @@ def create_scheduler(
     if scheduler_class is None:
         return None
 
-    return scheduler_class(optimizer, **kwargs)
+    scheduler = scheduler_class(optimizer, **kwargs)
+    return cast(
+        optim.lr_scheduler.LRScheduler | optim.lr_scheduler.ReduceLROnPlateau,
+        scheduler,
+    )
 
 
 def rmse(pred: Tensor, target: Tensor) -> float:
@@ -536,7 +547,7 @@ def train_model(
     dataset : TensorDataset
         Dataset containing features and labels. Expected formats:
         - Digital/barrier: (x, price, delta_pw, delta_lrm)
-        - Basket: (x, price, delta_pw_avg, delta_lrm_avg, delta_true)
+        - Basket: (x, price, delta_pw, delta_lrm)
         - Gamma portfolio: (x, price_true, delta_true, gamma_true, price_mc, delta_pw, gamma_pwlr)
     config : TrainingConfig
         Training configuration with hyperparameters.
@@ -576,7 +587,7 @@ def train_model(
     model.train()
 
     # Create data loader with batching and shuffling
-    dataloader = DataLoader(
+    dataloader: DataLoader[tuple[Tensor, ...]] = DataLoader(
         dataset,
         batch_size=config.batch_size,
         shuffle=True,
@@ -594,26 +605,30 @@ def train_model(
         eta_min=config.lr_min
     )
 
+    mixed_precision_enabled = config.use_mixed_precision and device.type == "cuda"
+
     # Training loop over epochs
     for epoch in range(config.n_epochs):
         epoch_loss = 0.0
         n_batches = 0
 
         # Iterate over batches
-        for batch in dataloader:
-            # Move batch to device
-            batch = [b.to(device) for b in batch]
+        for raw_batch in dataloader:
+            # Move batch to device and make tuple for stable typing
+            batch = tuple(b.to(device) for b in raw_batch)
 
             # Unpack batch based on dataset type
             # We infer the dataset type from the number of tensors
+            gamma_pwlr: Tensor | None = None
+            delta_pw: Tensor | None = None
+            delta_lrm: Tensor | None = None
+
             if len(batch) == 4:
                 # Digital/barrier format: (x, price, delta_pw, delta_lrm)
                 x, true_price, delta_pw, delta_lrm = batch
-                gamma_pwlr = None
             elif len(batch) == 5:
-                # Basket format: (x, price, delta_pw_avg, delta_lrm_avg, delta_true)
+                # Basket format (legacy datasets returning extra label)
                 x, true_price, delta_pw, delta_lrm, _ = batch
-                gamma_pwlr = None
             elif len(batch) == 7:
                 # Gamma portfolio format: (x, price_true, delta_true, gamma_true, price_mc, delta_pw, gamma_pwlr)
                 x, true_price, delta_true, _gamma_true, _, delta_pw, gamma_pwlr = batch
@@ -625,88 +640,77 @@ def train_model(
             # Zero gradients
             optimizer.zero_grad()
 
-            # Compute neural network outputs based on mode
-            if mode == "standard":
-                # Standard mode: only compute value (price)
-                pred_price, pred_delta, pred_gamma = nn_value_delta_gamma(
-                    model, x,
-                    compute_delta=False,
-                    compute_gamma=False
-                )
-            elif mode in ["delta_pathwise", "delta_lrm"]:
-                # Delta modes: compute value and delta
-                pred_price, pred_delta, pred_gamma = nn_value_delta_gamma(
-                    model, x,
-                    compute_delta=True,
-                    compute_gamma=False
-                )
-            elif mode == "gamma_pwlr":
-                # Gamma mode: compute value, delta, and gamma
-                # Note: gamma only supported for 1D input
-                if x.shape[1] != 1:
-                    raise ValueError(
-                        f"Gamma mode requires 1D input, but got input with shape {x.shape}"
+            prec_context = maybe_mixed_precision(device) if mixed_precision_enabled else contextlib.nullcontext()
+            with prec_context:
+                # Compute neural network outputs based on mode
+                if mode == "standard":
+                    pred_price, pred_delta, pred_gamma = nn_value_delta_gamma(
+                        model, x,
+                        compute_delta=False,
+                        compute_gamma=False
                     )
-                pred_price, pred_delta, pred_gamma = nn_value_delta_gamma(
-                    model, x,
-                    compute_delta=True,
-                    compute_gamma=True
-                )
-            else:
-                raise ValueError(f"Unknown mode: {mode}")
+                elif mode in ["delta_pathwise", "delta_lrm"]:
+                    pred_price, pred_delta, pred_gamma = nn_value_delta_gamma(
+                        model, x,
+                        compute_delta=True,
+                        compute_gamma=False
+                    )
+                elif mode == "gamma_pwlr":
+                    if x.shape[1] != 1:
+                        raise ValueError(
+                            f"Gamma mode requires 1D input, but got input with shape {x.shape}"
+                        )
+                    pred_price, pred_delta, pred_gamma = nn_value_delta_gamma(
+                        model, x,
+                        compute_delta=True,
+                        compute_gamma=True
+                    )
+                else:
+                    raise ValueError(f"Unknown mode: {mode}")
 
-            # Handle multi-dimensional input for basket options
-            # If x has more than 1 feature, average the delta over features
-            if pred_delta is not None and x.shape[1] > 1:
-                # Average delta across input dimensions for comparison with scalar labels
-                pred_delta_scalar = pred_delta.mean(dim=1, keepdim=True)
-            else:
-                pred_delta_scalar = pred_delta
+                pred_delta_scalar: Tensor | None
+                if pred_delta is not None and x.shape[1] > 1:
+                    pred_delta_scalar = pred_delta.mean(dim=1, keepdim=True)
+                else:
+                    pred_delta_scalar = pred_delta
 
-            # Select appropriate delta labels based on mode
-            if mode == "delta_pathwise":
-                true_delta = delta_pw
-            elif mode == "delta_lrm":
-                true_delta = delta_lrm
-            elif mode == "gamma_pwlr":
-                true_delta = delta_lrm  # Use LRM delta for gamma mode
-            else:
-                true_delta = None
+                if mode == "delta_pathwise":
+                    true_delta = delta_pw
+                elif mode in ["delta_lrm", "gamma_pwlr"]:
+                    true_delta = delta_lrm
+                else:
+                    true_delta = None
 
-            # Compute loss using dml_loss function
-            if mode == "standard":
-                # Price loss only
-                loss = dml_loss(
-                    pred_price=pred_price,
-                    true_price=true_price,
-                    lambda_delta=0.0,
-                    lambda_gamma=0.0
-                )
-            elif mode in ["delta_pathwise", "delta_lrm"]:
-                # Price + delta loss
-                loss = dml_loss(
-                    pred_price=pred_price,
-                    true_price=true_price,
-                    pred_delta_scalar=pred_delta_scalar,
-                    true_delta_scalar=true_delta,
-                    lambda_delta=config.lambda_delta,
-                    lambda_gamma=0.0
-                )
-            elif mode == "gamma_pwlr":
-                # Price + delta + gamma loss
-                loss = dml_loss(
-                    pred_price=pred_price,
-                    true_price=true_price,
-                    pred_delta_scalar=pred_delta_scalar,
-                    true_delta_scalar=true_delta,
-                    pred_gamma=pred_gamma,
-                    true_gamma=gamma_pwlr,
-                    lambda_delta=config.lambda_delta,
-                    lambda_gamma=config.lambda_gamma
-                )
+                if mode == "standard":
+                    loss = dml_loss(
+                        pred_price=pred_price,
+                        true_price=true_price,
+                        lambda_delta=0.0,
+                        lambda_gamma=0.0
+                    )
+                elif mode in ["delta_pathwise", "delta_lrm"]:
+                    loss = dml_loss(
+                        pred_price=pred_price,
+                        true_price=true_price,
+                        pred_delta_scalar=pred_delta_scalar,
+                        true_delta_scalar=true_delta,
+                        lambda_delta=config.lambda_delta,
+                        lambda_gamma=0.0
+                    )
+                elif mode == "gamma_pwlr":
+                    loss = dml_loss(
+                        pred_price=pred_price,
+                        true_price=true_price,
+                        pred_delta_scalar=pred_delta_scalar,
+                        true_delta_scalar=true_delta,
+                        pred_gamma=pred_gamma,
+                        true_gamma=gamma_pwlr,
+                        lambda_delta=config.lambda_delta,
+                        lambda_gamma=config.lambda_gamma
+                    )
 
             # Backward pass
-            loss.backward()
+            loss.backward()  # type: ignore[no-untyped-call]
 
             # Optimizer step
             optimizer.step()

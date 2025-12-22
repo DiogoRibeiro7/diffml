@@ -6,23 +6,28 @@ and configuration-based experiment execution.
 
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
-
-from diffml.config import TrainingConfig
-from diffml.config_experiments import (
+from diffml_article_replication.config_experiments import (
     ExperimentConfig,
     load_experiment_config,
     save_experiment_config,
 )
-from diffml.experiments_registry import (
+from diffml_article_replication.experiments_registry import (
     EXPERIMENT_REGISTRY,
     clear_registry,
     get_experiment,
     list_registered_experiments,
     register_experiment,
 )
-from diffml.run_experiment import run_experiment_from_dict, validate_config
+from diffml_article_replication.run_experiment import (
+    run_experiment_from_config,
+    run_experiment_from_dict,
+    validate_config,
+)
+
+from diffml.config import TrainingConfig
 
 
 class TestExperimentConfig:
@@ -359,6 +364,16 @@ class TestConfigFileIntegration:
         assert config.name == "basket"
         assert config.d == 20
         assert config.m_train == 2048  # More samples for high-dim
+
+    def test_run_experiment_smoke(self):
+        """Run the experiment runner with the small config to ensure wiring works."""
+        config_path = Path("configs/test_small.toml")
+        if not config_path.exists():
+            pytest.skip("Small config file not found")
+
+        with patch("diffml_article_replication.experiments_digital._digital_impl") as mock_impl:
+            run_experiment_from_config(str(config_path))
+            assert mock_impl.called
 
 
 if __name__ == "__main__":

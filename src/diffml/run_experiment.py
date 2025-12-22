@@ -4,7 +4,9 @@ This module provides functions to run experiments based on TOML configuration
 files, using the experiment registry system.
 """
 
+import importlib
 from pathlib import Path
+from typing import Any
 
 from diffml.config_experiments import load_experiment_config
 from diffml.experiments_registry import get_experiment, list_registered_experiments
@@ -89,7 +91,7 @@ def _ensure_experiments_registered() -> None:
     # import diffml.experiments_gamma
 
 
-def run_experiment_from_dict(config_dict: dict) -> None:
+def run_experiment_from_dict(config_dict: dict[str, Any]) -> None:
     """Run an experiment from a configuration dictionary.
 
     This is useful for programmatic experiment execution without files.
@@ -112,10 +114,10 @@ def run_experiment_from_dict(config_dict: dict) -> None:
     # Create a temporary config file
     import tempfile
 
-    import toml
+    toml_module = importlib.import_module("toml")
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False) as f:
-        toml.dump(config_dict, f)
+        toml_module.dump(config_dict, f)
         temp_path = f.name
 
     try:

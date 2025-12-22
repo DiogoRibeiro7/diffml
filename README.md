@@ -97,6 +97,13 @@ poetry run python scripts/run_experiment.py --config configs/digital_default.tom
 poetry run python scripts/run_experiment.py --validate configs/digital_default.toml
 ```
 
+Each configuration file feeds into
+`diffml_article_replication.config_experiments.ExperimentConfig`, and the
+experiment implementation is looked up via the registry in
+`diffml_article_replication.experiments_registry`. This keeps the experiment
+logic decoupled from the CLI so you can tweak parameters or add new experiments
+by dropping an additional TOML file and registering a function.
+
 Available configurations:
 - `configs/digital_default.toml` - Digital option experiment
 - `configs/barrier_default.toml` - Barrier option experiment
@@ -110,6 +117,26 @@ Execute all experiments from the paper:
 
 ```bash
 poetry run python scripts/run_all_experiments.py
+```
+
+### Benchmark & Sensitivity Analysis
+
+Generate benchmark tables plus a ``lambda_delta`` sweep for the digital experiment:
+
+```bash
+poetry run python scripts/run_benchmark_digital.py --seeds 0 1 --lambda-delta-values 0.0 0.5 1.0
+```
+
+### Path-Dependent Experiments
+
+Run the arithmetic Asian and fixed-strike lookback experiments with a single CLI:
+
+```bash
+# Run both experiments
+poetry run python scripts/run_path_dependent_experiments.py
+
+# Only run the Asian setup
+poetry run python scripts/run_path_dependent_experiments.py --experiment asian
 ```
 
 ### Run Individual Experiments (Programmatic)
@@ -174,6 +201,31 @@ model = train_model(
     config=config,
     mode="delta_lrm"
 )
+```
+
+### Unified Simulator API Example
+
+```python
+import torch
+from diffml.config import BSParams, TrainingConfig
+from diffml_article_replication.api import diffml_price
+from diffml_article_replication.simulator_api import DigitalCallSimulator
+
+simulator = DigitalCallSimulator(strike=1.0, params=BSParams(r=0.0, sigma=0.2, T=1.0 / 3.0))
+x_train = torch.linspace(0.5, 1.5, 64).reshape(-1, 1)
+x_test = torch.tensor([[0.9], [1.0], [1.1]])
+
+prices, deltas, _ = diffml_price(
+    simulator=simulator,
+    x_train=x_train,
+    x_test=x_test,
+    mode="delta_lrm",
+    training_config=TrainingConfig(n_epochs=200, batch_size=64, lr_initial=1e-3),
+    lambda_delta=1.0,
+    seed=0,
+)
+print("Prices:", prices.squeeze(-1))
+print("Deltas:", deltas.squeeze(-1))
 ```
 
 ## 📁 Project Structure

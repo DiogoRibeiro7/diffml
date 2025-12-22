@@ -5,7 +5,7 @@ to ensure they can run without exceptions. These tests use reduced
 configurations for speed.
 """
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
@@ -44,8 +44,8 @@ class TestDigitalExperimentSmoke:
     @patch('diffml.experiments_digital.make_digital_dataset')
     def test_run_digital_experiment_smoke(
         self,
-        mock_dataset,
-        mock_config,
+        mock_dataset: MagicMock,
+        mock_config: MagicMock,
         fast_training_config: TrainingConfig
     ) -> None:
         """Test that digital experiment runs without exceptions."""
@@ -84,8 +84,8 @@ class TestBarrierExperimentSmoke:
     @patch('diffml.experiments_barrier.make_barrier_dataset')
     def test_run_barrier_experiment_smoke(
         self,
-        mock_dataset,
-        mock_config,
+        mock_dataset: MagicMock,
+        mock_config: MagicMock,
         fast_training_config: TrainingConfig
     ) -> None:
         """Test that barrier experiment runs without exceptions."""
@@ -115,8 +115,8 @@ class TestBasketExperimentSmoke:
     @patch('diffml.experiments_basket.make_basket_digital_dataset')
     def test_run_basket_experiment_smoke(
         self,
-        mock_dataset,
-        mock_config,
+        mock_dataset: MagicMock,
+        mock_config: MagicMock,
         fast_training_config: TrainingConfig
     ) -> None:
         """Test that basket experiment runs without exceptions."""
@@ -158,8 +158,8 @@ class TestSmoothingExperimentSmoke:
     @patch('diffml.experiments_smoothing.make_smoothed_digital_dataset')
     def test_run_smoothing_experiment_smoke(
         self,
-        mock_dataset,
-        mock_config,
+        mock_dataset: MagicMock,
+        mock_config: MagicMock,
         fast_training_config: TrainingConfig
     ) -> None:
         """Test that smoothing experiment runs without exceptions."""
@@ -190,8 +190,8 @@ class TestGammaExperimentSmoke:
     @patch('diffml.experiments_gamma.make_portfolio_gamma_dataset')
     def test_run_gamma_experiment_smoke(
         self,
-        mock_dataset,
-        mock_config,
+        mock_dataset: MagicMock,
+        mock_config: MagicMock,
         fast_training_config: TrainingConfig
     ) -> None:
         """Test that gamma experiment runs without exceptions."""
@@ -295,10 +295,10 @@ class TestExperimentOutput:
     @patch('diffml.experiments_digital.make_digital_dataset')
     def test_experiment_prints_results(
         self,
-        mock_dataset,
-        mock_train,
-        mock_config,
-        mock_print
+        mock_dataset: MagicMock,
+        mock_train: MagicMock,
+        mock_config: MagicMock,
+        mock_print: MagicMock
     ) -> None:
         """Test that experiments print results in expected format."""
         # Setup mocks
@@ -343,8 +343,8 @@ class TestExperimentReproducibility:
     @patch('diffml.experiments_digital.make_digital_dataset')
     def test_digital_experiment_deterministic(
         self,
-        mock_dataset,
-        mock_config
+        mock_dataset: MagicMock,
+        mock_config: MagicMock
     ) -> None:
         """Test that digital experiment is deterministic with fixed seed."""
         # Create deterministic mock data

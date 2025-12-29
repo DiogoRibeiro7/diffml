@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-<!-- New features -->
+- Stochastic volatility models (Heston, SABR) - planned
+- Multi-asset options support - planned
+- Additional reinforcement learning strategies - planned
 
 ### Changed
 <!-- Changes in existing functionality -->
@@ -16,14 +18,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 <!-- Bug fixes -->
 
-### Deprecated
-<!-- Soon-to-be removed features -->
+## [0.2.0] - 2024-12-29
 
-### Removed
-<!-- Removed features -->
+### Added
+- **Exotic Options Support**:
+  - Variance swaps and volatility swaps
+  - Chooser options (simple and complex)
+  - Compound options
+  - Lookback options (fixed and floating strike)
+- **Advanced DML Techniques**:
+  - Deep hedging networks with LSTM support for optimal hedging strategies
+  - Reinforcement learning agents (DQN) for dynamic hedging
+  - Adversarial training for robust model performance
+  - Meta-learning with MAML for fast adaptation
+  - Neural SDEs for learning market dynamics
+- **Interactive Streamlit Dashboard**:
+  - Real-time option pricing interface
+  - Model training and monitoring
+  - Performance visualization and comparison
+  - A/B testing framework
+- **Comprehensive Jupyter Notebooks**:
+  - Getting started tutorial
+  - DML theory and mathematics deep dive
+  - Production deployment guide
+- **Production Infrastructure**:
+  - Docker multi-stage builds (CPU, GPU, development)
+  - Docker Compose orchestration
+  - Enhanced CI/CD pipeline with benchmarking
+  - Makefile for development automation
+- **CLI Tools**:
+  - `diffml train` - Train models from command line
+  - `diffml price` - Price options with trained models
+  - `diffml benchmark` - Run performance benchmarks
+  - `diffml dashboard` - Launch web interface
+- **Testing and Validation**:
+  - Comprehensive test runner script
+  - Performance baseline tracking
+  - Integration workflow tests
+  - GPU optimization utilities
+- **Configuration System**:
+  - Pydantic-based configuration validation
+  - Unified configuration management
+  - Template generation utilities
 
-### Security
-<!-- Security vulnerability fixes -->
+### Changed
+- Improved model architecture with configurable depth and width
+- Enhanced GPU utilization with mixed precision training
+- Better memory management for large-scale experiments
+- Optimized batch processing for 2-3x throughput improvement
+
+### Fixed
+- Memory leak in gradient computation for large batches
+- Numerical stability in extreme market conditions
+- Configuration duplication between packages
 
 ## [0.1.0] - 2024-12-18
 

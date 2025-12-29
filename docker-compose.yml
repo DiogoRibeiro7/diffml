@@ -1,0 +1,218 @@
+version: '3.8'
+
+services:
+  # CPU-based DiffML service
+  diffml-cpu:
+    build:
+      context: .
+      target: cpu-runtime
+    image: diffml:cpu-latest
+    container_name: diffml-cpu
+    volumes:
+      - ./data:/data
+      - ./results:/results
+      - ./configs:/app/configs:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DIFFML_DEVICE=cpu
+    command: python scripts/run_comprehensive_experiments.py --output /results
+    networks:
+      - diffml-network
+
+  # GPU-based DiffML service (requires nvidia-docker)
+  diffml-gpu:
+    build:
+      context: .
+      target: gpu-runtime
+    image: diffml:gpu-latest
+    container_name: diffml-gpu
+    runtime: nvidia
+    volumes:
+      - ./data:/data
+      - ./results:/results
+      - ./configs:/app/configs:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DIFFML_DEVICE=cuda
+      - CUDA_VISIBLE_DEVICES=0
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: python scripts/run_comprehensive_experiments.py --output /results
+    networks:
+      - diffml-network
+    profiles:
+      - gpu
+
+  # Jupyter development environment
+  jupyter:
+    build:
+      context: .
+      target: development
+    image: diffml:dev-latest
+    container_name: diffml-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./:/app
+      - ./notebooks:/app/notebooks
+      - ./data:/data
+      - ./results:/results
+    environment:
+      - PYTHONUNBUFFERED=1
+      - JUPYTER_ENABLE_LAB=yes
+    command: >
+      jupyter lab
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --allow-root
+      --NotebookApp.token=''
+      --NotebookApp.password=''
+    networks:
+      - diffml-network
+    profiles:
+      - dev
+
+  # Streamlit dashboard
+  streamlit:
+    build:
+      context: .
+      target: development
+    image: diffml:dev-latest
+    container_name: diffml-streamlit
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./:/app
+      - ./data:/data
+      - ./results:/results
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: streamlit run dashboard.py --server.address 0.0.0.0
+    networks:
+      - diffml-network
+    profiles:
+      - dev
+
+  # TensorBoard for monitoring
+  tensorboard:
+    build:
+      context: .
+      target: cpu-runtime
+    image: diffml:cpu-latest
+    container_name: diffml-tensorboard
+    ports:
+      - "6006:6006"
+    volumes:
+      - ./results:/results:ro
+      - ./logs:/logs:ro
+    command: tensorboard --logdir=/logs --host=0.0.0.0
+    networks:
+      - diffml-network
+    profiles:
+      - monitoring
+
+  # PostgreSQL database for experiment tracking (optional)
+  postgres:
+    image: postgres:16-alpine
+    container_name: diffml-postgres
+    environment:
+      - POSTGRES_DB=diffml
+      - POSTGRES_USER=diffml
+      - POSTGRES_PASSWORD=diffml_secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - diffml-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U diffml"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - db
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: diffml-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - diffml-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - cache
+
+  # MLflow for experiment tracking (optional)
+  mlflow:
+    build:
+      context: .
+      target: development
+    image: diffml:dev-latest
+    container_name: diffml-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+      - ./mlflow_artifacts:/mlflow_artifacts
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=postgresql://diffml:diffml_secret@postgres:5432/diffml
+      - MLFLOW_ARTIFACT_ROOT=/mlflow_artifacts
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri postgresql://diffml:diffml_secret@postgres:5432/diffml
+      --default-artifact-root /mlflow_artifacts
+    networks:
+      - diffml-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - mlops
+
+networks:
+  diffml-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+
+# Usage examples:
+#
+# 1. Run CPU experiments:
+#    docker-compose up diffml-cpu
+#
+# 2. Run GPU experiments (requires nvidia-docker):
+#    docker-compose --profile gpu up diffml-gpu
+#
+# 3. Start development environment with Jupyter:
+#    docker-compose --profile dev up jupyter
+#    Then open http://localhost:8888
+#
+# 4. Start Streamlit dashboard:
+#    docker-compose --profile dev up streamlit
+#    Then open http://localhost:8501
+#
+# 5. Start full MLOps stack:
+#    docker-compose --profile mlops --profile db --profile cache up
+#
+# 6. Start monitoring with TensorBoard:
+#    docker-compose --profile monitoring up tensorboard
+#    Then open http://localhost:6006

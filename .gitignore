@@ -1,3 +1,17 @@
+# DiffML Specific
+experiment_results/
+benchmarks/*.json
+benchmarks/report_*.md
+benchmarks/baseline_*.json
+test_report.json
+mlruns/
+mlflow_artifacts/
+dashboard_cache/
+.experiment_cache/
+*.pt
+*.pth
+*.ckpt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

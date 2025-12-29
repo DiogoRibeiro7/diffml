@@ -1,0 +1,147 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Poetry
+poetry.lock
+
+# Testing
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+htmlcov/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Results and logs (but keep directories)
+results/*
+!results/.gitkeep
+logs/*
+!logs/.gitkeep
+benchmarks/*
+!benchmarks/.gitkeep
+experiment_results/*
+!experiment_results/.gitkeep
+
+# MLflow
+mlruns/
+mlflow_artifacts/
+
+# Model checkpoints
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.pb
+
+# Data files (optional - comment out if needed in container)
+data/*.csv
+data/*.parquet
+data/*.h5
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Documentation source files
+*.md
+!README.md
+LICENSE
+
+# Configuration files (keep only necessary ones)
+.pre-commit-config.yaml
+.ruff.toml
+mypy.ini
+pyrightconfig.json
+
+# Test files (optional - include if running tests in container)
+# tests/
+# test_*.py
+
+# Scripts not needed in production
+scripts/dev_*.py
+
+# Cache directories
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Benchmarks and profiling
+*.prof
+*.lprof
+profile_results/

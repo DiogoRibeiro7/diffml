@@ -41,7 +41,7 @@ model = train_model(model, dataset, config, mode="delta_lrm")
 ```
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Diogo Ribeiro"
 __email__ = "dfr@esmad.ipp.pt"
 

@@ -1,0 +1,62 @@
+# Include documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+
+# Include configuration files
+include pyproject.toml
+include setup.cfg
+include .pre-commit-config.yaml
+include Makefile
+
+# Include requirements files
+include requirements*.txt
+
+# Include configuration examples
+recursive-include configs *.toml *.yaml *.json
+
+# Include test files
+recursive-include tests *.py *.json *.yaml
+
+# Include documentation source
+recursive-include docs *.rst *.py *.md Makefile
+
+# Include notebooks
+recursive-include notebooks *.ipynb
+
+# Include example scripts
+recursive-include examples *.py *.md
+
+# Include data files
+recursive-include src/diffml/data *.csv *.json
+
+# Exclude build artifacts
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude *.dylib
+
+# Exclude development files
+exclude .dockerignore
+exclude Dockerfile
+exclude docker-compose.yml
+exclude .github
+recursive-exclude .github *
+
+# Exclude cache and temporary files
+exclude .coverage
+exclude .pytest_cache
+recursive-exclude .pytest_cache *
+exclude .mypy_cache
+recursive-exclude .mypy_cache *
+exclude .ruff_cache
+recursive-exclude .ruff_cache *
+
+# Exclude results and logs
+recursive-exclude results *
+recursive-exclude logs *
+recursive-exclude mlruns *
+recursive-exclude experiment_results *

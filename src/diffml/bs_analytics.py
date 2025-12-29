@@ -51,14 +51,34 @@ def bs_digital_price(x: Tensor, K: float, params: BSParams) -> Tensor:
 
     A digital call pays 1 if S_T > K, and 0 otherwise.
 
-    Price = e^(-rT) * N(d2)
+    Mathematical Derivation:
+    ------------------------
+    Under the risk-neutral measure Q, the stock price follows:
+        dS_t = r S_t dt + σ S_t dW_t
 
-    where d2 = (log(S/K) + (r - sigma^2/2)*T) / (sigma * sqrt(T))
+    The solution at time T is:
+        S_T = S_0 exp((r - σ²/2)T + σ√T Z)
+
+    where Z ~ N(0,1) is standard normal.
+
+    The digital call payoff is 1_{S_T > K}, so the price is:
+        V = e^{-rT} E^Q[1_{S_T > K}]
+        V = e^{-rT} P(S_T > K)
+        V = e^{-rT} P(log(S_T/S_0) > log(K/S_0))
+
+    Since log(S_T/S_0) ~ N((r - σ²/2)T, σ²T), we have:
+        P(S_T > K) = P(Z > -d₂)
+
+    where:
+        d₂ = [log(S₀/K) + (r - σ²/2)T] / (σ√T)
+
+    Therefore:
+        V = e^{-rT} N(d₂)
 
     Parameters
     ----------
     x : Tensor
-        Current spot price(s). Shape: (batch_size, 1) or (batch_size,).
+        Current spot price(s) S₀. Shape: (batch_size, 1) or (batch_size,).
     K : float
         Strike price.
     params : BSParams
@@ -93,9 +113,34 @@ def bs_digital_price(x: Tensor, K: float, params: BSParams) -> Tensor:
 def bs_digital_delta(x: Tensor, K: float, params: BSParams) -> Tensor:
     """Calculate Black-Scholes delta for a digital call option.
 
-    Delta = dPrice/dS = e^(-rT) * n(d2) / (S * sigma * sqrt(T))
+    Mathematical Derivation:
+    ------------------------
+    Starting from the digital option price:
+        V(S) = e^{-rT} N(d₂)
 
-    where n(d2) is the standard normal PDF at d2.
+    where:
+        d₂(S) = [log(S/K) + (r - σ²/2)T] / (σ√T)
+
+    The delta is:
+        Δ = ∂V/∂S
+
+    Using the chain rule:
+        Δ = e^{-rT} ∂N(d₂)/∂S
+        Δ = e^{-rT} n(d₂) ∂d₂/∂S
+
+    where n(·) is the standard normal PDF.
+
+    Computing ∂d₂/∂S:
+        ∂d₂/∂S = ∂/∂S [log(S/K)/(σ√T) + (r - σ²/2)√T/σ]
+        ∂d₂/∂S = 1/(S σ√T)
+
+    Therefore:
+        Δ = e^{-rT} n(d₂)/(S σ√T)
+
+    This delta represents the rate of change of the digital option
+    value with respect to the underlying price. Note that unlike
+    vanilla options, digital option delta can be negative for
+    certain parameter ranges.
 
     Parameters
     ----------

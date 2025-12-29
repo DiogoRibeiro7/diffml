@@ -19,10 +19,30 @@ def simulate_bs_terminal(
 ) -> tuple[Tensor, Tensor]:
     """Simulate terminal prices under Black-Scholes using exact one-step solution.
 
-    Uses the exact Black-Scholes solution for terminal price:
-    ST = S0 * exp((r - 0.5*sigma^2)*T + sigma*sqrt(T)*xi)
+    Mathematical Derivation:
+    ------------------------
+    Under the risk-neutral measure Q, the stock price follows the SDE:
+        dS_t = r S_t dt + σ S_t dW_t
 
-    where xi ~ N(0,1).
+    where:
+        r = risk-free rate
+        σ = volatility
+        W_t = Brownian motion under Q
+
+    Applying Itô's lemma to log(S_t):
+        d(log S_t) = (r - σ²/2) dt + σ dW_t
+
+    Integrating from 0 to T:
+        log(S_T) - log(S_0) = (r - σ²/2)T + σ(W_T - W_0)
+        log(S_T) = log(S_0) + (r - σ²/2)T + σ W_T
+
+    Since W_T ~ N(0, T), we can write W_T = √T ξ where ξ ~ N(0,1):
+        log(S_T) = log(S_0) + (r - σ²/2)T + σ√T ξ
+
+    Therefore:
+        S_T = S_0 exp((r - σ²/2)T + σ√T ξ)
+
+    This is the exact solution - no discretization error!
 
     Parameters
     ----------

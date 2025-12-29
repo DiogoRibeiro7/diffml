@@ -15,7 +15,7 @@ fail_fast: false
 repos:
   # General file fixes and checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0  # TODO: Update to latest stable version
+    rev: v5.0.0  # Latest stable version as of Dec 2024
     hooks:
       - id: trailing-whitespace
         name: Trim trailing whitespace
@@ -42,7 +42,7 @@ repos:
 
   # Python code formatting with Black (optional but recommended)
   - repo: https://github.com/psf/black
-    rev: 23.12.1  # TODO: Update to latest stable version
+    rev: 24.10.0  # Latest stable version as of Dec 2024
     hooks:
       - id: black
         name: Format code with Black
@@ -51,7 +51,7 @@ repos:
 
   # Import sorting with isort (optional, complementary to ruff)
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2  # TODO: Update to latest stable version
+    rev: 5.13.2  # Latest stable version as of Dec 2024
     hooks:
       - id: isort
         name: Sort imports with isort
@@ -59,7 +59,7 @@ repos:
 
   # Ruff - Fast Python linter (primary linter)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9  # TODO: Update to latest stable version
+    rev: v0.8.5  # Latest stable version as of Dec 2024
     hooks:
       - id: ruff
         name: Lint with ruff
@@ -68,7 +68,7 @@ repos:
 
   # Security checks with Bandit
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.6  # TODO: Update to latest stable version
+    rev: 1.7.10  # Latest stable version as of Dec 2024
     hooks:
       - id: bandit
         name: Security check with Bandit

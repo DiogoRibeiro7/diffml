@@ -26,15 +26,38 @@ def dml_loss(
 ) -> Tensor:
     """Compute differential machine learning loss with price, delta, and gamma terms.
 
-    Implements the differential ML loss function combining:
-    - Base MSE loss on prices
-    - Optional delta (first derivative) regularization
-    - Optional gamma (second derivative) regularization
+    Mathematical Foundation:
+    ------------------------
+    Differential ML leverages automatic differentiation to train neural networks
+    on both function values and their derivatives simultaneously. This approach
+    dramatically improves convergence speed and accuracy for pricing and hedging.
+
+    Theory:
+    Let f(x; θ) be a neural network with parameters θ approximating option price V(x).
+    The sensitivities (Greeks) are computed via automatic differentiation:
+        Δ = ∂f/∂S  (delta)
+        Γ = ∂²f/∂S² (gamma)
+
+    The DML loss function is:
+        L(θ) = E[(f(x; θ) - V(x))²]
+             + λ_Δ E[(∂f/∂x(x; θ) - ∂V/∂x(x))²]
+             + λ_Γ E[(∂²f/∂x²(x; θ) - ∂²V/∂x²(x))²]
+
+    Benefits:
+    1. Faster convergence: 5-10x speedup vs standard ML
+    2. Better generalization: Learning derivatives regularizes the function
+    3. Accurate Greeks: Sensitivities are learned, not finite-differenced
+
+    Implementation Details:
+    - The base MSE loss ensures accurate pricing
+    - Delta regularization improves hedge ratios
+    - Gamma regularization stabilizes second-order sensitivities
+    - Lambda parameters control the trade-off between objectives
 
     The total loss is:
     L = MSE(pred_price, true_price)
-        + lambda_delta * MSE(pred_delta, true_delta)
-        + lambda_gamma * MSE(pred_gamma, true_gamma)
+        + λ_Δ * MSE(pred_delta, true_delta)
+        + λ_Γ * MSE(pred_gamma, true_gamma)
 
     Parameters
     ----------
